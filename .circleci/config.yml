@@ -20,6 +20,7 @@ jobs:
             npm install chai
             npm install @nomiclabs/hardhat-truffle5
             npm install "@nomiclabs/hardhat-web3@^2.0.0"
+            npm install @openzeppelin/test-helpers
       - run:
           name: test contracts
           command: |
