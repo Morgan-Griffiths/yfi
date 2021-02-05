@@ -1,0 +1,23 @@
+{
+  "name": "yfi",
+  "version": "1.0.0",
+  "description": "private yfi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Morgan-Griffiths/yfi.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Morgan-Griffiths/yfi/issues"
+  },
+  "homepage": "https://github.com/Morgan-Griffiths/yfi#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.0",
+    "dotenv": "^8.2.0"
+  }
+}
