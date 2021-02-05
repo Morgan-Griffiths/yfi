@@ -14,7 +14,8 @@ jobs:
       - run:
           name: install deps
           command: |
-            npm install .
+            npm install hardhat
+            npm install @nomiclabs/hardhat-ethers ethers
       - run:
           name: test contracts
           command: |
