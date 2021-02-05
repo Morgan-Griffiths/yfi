@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -10,12 +11,12 @@ contract GLDToken is ERC20, AccessControl {
     constructor() public ERC20("Gold", "GLD") {
         _setupRole(MINTER_ROLE, msg.sender);
     }
-    function depositEth(address recipient, uint256 amount) public payable virtual {
+    function depositEth(address, uint256 amount) public payable virtual {
         require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _mint(msg.sender, amount);
     }
-    function withdrawEth(address recipient, uint256 amount) public virtual {
+    function withdrawEth(address, uint256 amount) public virtual {
         require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         require(balanceOf(msg.sender) >= amount, "Amount to withdraw exceeds address balance");

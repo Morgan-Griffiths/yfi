@@ -17,4 +17,7 @@ npx hardhat run --network localhost scripts/index.js
 npx hardhat verify --network mainnet DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"
 
 # Test
-npx hardhat test
+npm test
+
+# tsc watch
+npm run watch

@@ -4,7 +4,9 @@
   "description": "private yfi",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "watch": "npx tsc --watch",
+    "build": "npx tsc"
   },
   "repository": {
     "type": "git",
