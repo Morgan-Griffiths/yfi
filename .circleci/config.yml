@@ -17,6 +17,7 @@ jobs:
             npm install hardhat
             npm install @nomiclabs/hardhat-ethers ethers
             npm install @openzeppelin/contracts
+            npm install chai
       - run:
           name: test contracts
           command: |
