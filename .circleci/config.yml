@@ -12,9 +12,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install hardhat
+          name: install deps
           command: |
-            npm install hardhat
+            npm install .
       - run:
           name: test contracts
           command: |
