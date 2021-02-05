@@ -9,7 +9,6 @@ jobs:
   build-and-test:
     docker:
       - image: circleci/node:10
-    executor: python/default
     steps:
       - checkout
       - run:
