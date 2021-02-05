@@ -1,16 +1,20 @@
 // scripts/index.js
+
 async function main() {
     // Our code will go here
     // Retrieve accounts from the local node
+    const [owner, addr1] = await ethers.getSigners();
     const accounts = await ethers.provider.listAccounts();
     console.log(accounts);
 
-    const walletAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
-    const address = '0x0165878A594ca255338adfa4d48449f69242Eb8F'
+    const walletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+    const address = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
     const GLDToken = await ethers.getContractFactory("GLDToken");
     const token = await GLDToken.attach(address);
     value = await token.balanceOf(walletAddress);
     console.log("Balance is", value.toString());
+    value = await token.depositEth(0.1);
+    // await hardhatToken.transfer(addr1.address, 50);
     // await box.store(23);
     // const newValue = await box.retrieve();
     // console.log('Box value is',newValue.toString())
@@ -25,6 +29,20 @@ async function main() {
     // const newValue = await box.retrieve();
     // console.log('Box value is',newValue.toString())
   }
+//   this.address = address
+//   this.private_key = private_key
+//   this.chainId = chainId
+//   this.chain_dict = {
+//       1:'mainnet',
+//       4:'rinkeby'
+//   }
+//   this.network = this.chain_dict[this.chainId]
+//   this.weth = WETH[chainId];
+//   this.chain_name = this.chain_dict[chainId]
+//   this.provider_url = `https://${this.chain_name}.infura.io/v3/${process.env.INFURA_ACCESS_TOKEN}`
+//   this.transaction_url = (chainId != 1) ? `https://${this.chain_name}.etherscan.io/tx/` : `https://etherscan.io/tx/`s
+//   web3 = new Web3(new Web3.providers.HttpProvider(this.provider_url))
+//   web3.eth.defaultAccount = address
   
   main()
     .then(() => process.exit(0))

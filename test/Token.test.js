@@ -9,7 +9,7 @@ const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const token = artifacts.require('GLDToken');
 
 // Start test block
-contract('Box', function ([ owner, other ]) {
+contract('GLToken', function ([ owner, other ]) {
 
     // Use large integers ('big numbers')
     const value = new BN('42');

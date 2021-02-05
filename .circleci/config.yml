@@ -15,12 +15,13 @@ jobs:
           name: install deps
           command: |
             npm install hardhat
-            npm install @nomiclabs/hardhat-ethers ethers
-            npm install @openzeppelin/contracts
             npm install chai
-            npm install @nomiclabs/hardhat-truffle5
-            npm install "@nomiclabs/hardhat-web3@^2.0.0"
+            npm install @openzeppelin/contracts
             npm install @openzeppelin/test-helpers
+            npm install @nomiclabs/hardhat-truffle5
+            npm install @nomiclabs/hardhat-ethers ethers
+            npm install "@nomiclabs/hardhat-web3@^2.0.0"
+            npm install @openzeppelin/hardhat-upgrades
       - run:
           name: test contracts
           command: |

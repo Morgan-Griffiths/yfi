@@ -13,7 +13,7 @@ async function main() {
     const walletAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
     const Token = await ethers.getContractFactory("GLDToken");
     console.log("Deploying Token...")
-    const token = await Token.deploy(walletAddress);
+    const token = await Token.deploy();
     await token.deployed();
     console.log("Token deployed to:", token.address);
   }
