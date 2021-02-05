@@ -11,21 +11,23 @@ contract GLDToken is ERC20, AccessControl {
     constructor() public ERC20("Gold", "GLD") {
         _setupRole(MINTER_ROLE, msg.sender);
     }
-    function depositEth(address, uint256 amount) public payable virtual {
+    function depositEth(address, uint256 amount) public payable {
         require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _mint(msg.sender, amount);
     }
-    function withdrawEth(address, uint256 amount) public virtual {
-        require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
+    function withdrawEth(address, uint256 amount) public payable {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         require(balanceOf(msg.sender) >= amount, "Amount to withdraw exceeds address balance");
         _burn(msg.sender, amount);
         transfer(msg.sender,amount);
     }
-    function whitelistAddress(address recipient) public virtual {
+    function whitelistAddress(address recipient) public {
         require(!hasRole(MINTER_ROLE, recipient), "Recipient is already a minter");
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _setupRole(MINTER_ROLE, recipient);
+    }
+    function _isWhitelisted() public view returns (bool) {
+        return hasRole(MINTER_ROLE,msg.sender);
     }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "yfi",
-  "version": "1.0.0",
+  "name": "pfi",
+  "version": "0.1.0",
   "description": "private yfi",
   "main": "index.js",
   "scripts": {
@@ -36,6 +36,7 @@
     "ethereum-waffle": "^3.2.2",
     "ethers": "^5.0.29",
     "hardhat": "^2.0.8",
+    "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3",
     "web3": "^1.3.4"
