@@ -12,6 +12,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: install hardhat
+          command: |
+            npm install hardhat
+      - run:
           name: test contracts
           command: |
             npx hardhat test
