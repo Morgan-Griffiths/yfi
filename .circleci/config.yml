@@ -5,9 +5,18 @@ orbs:
   # Declare a dependency on the welcome-orb
   welcome: circleci/welcome-orb@0.4.1
 # Orchestrate or schedule a set of jobs
+jobs:
+  build-and-test:
+    docker:
+      - image: circleci/node:10
+    executor: python/default
+    steps:
+      - checkout
+      - run:
+          name: test contracts
+          command: |
+            npx hardhat test
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  main:
     jobs:
-      - welcome/run
+      - build-and-test
