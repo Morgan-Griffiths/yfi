@@ -16,6 +16,7 @@ jobs:
           command: |
             npm install hardhat
             npm install @nomiclabs/hardhat-ethers ethers
+            npm install @openzeppelin/contracts
       - run:
           name: test contracts
           command: |
