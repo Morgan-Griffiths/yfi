@@ -24,4 +24,13 @@ contract('GLDToken', function ([owner, other]) {
     await this.token.whitelistAddress(other);
     expect(await this.token._isWhitelisted({ from: other })).to.be.true;
   });
+  // Testing eth deposit and withdrawal
+  it('Send in eth, get tokens in return', async function () {
+    await this.token.depositEth({value:});
+    expect(await this.token._isWhitelisted({ from: other })).to.be.true;
+  });
+  // it('Send in tokens, get eth in return', async function () {
+  //   await this.token.whitelistAddress(other);
+  //   expect(await this.token._isWhitelisted({ from: other })).to.be.true;
+  // });
 });
