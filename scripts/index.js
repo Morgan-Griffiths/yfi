@@ -13,7 +13,20 @@ async function main() {
   const token = await GLDToken.attach(address);
   value = await token.balanceOf(walletAddress);
   console.log('Balance is', value.toString());
-  value = await token.depositEth(0.1);
+  console.log(Object.getOwnPropertyNames(token.signer));
+  console.log(Object.getOwnPropertyNames(owner.provider));
+  // tx = {
+  //   to: '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+  //   value: utils.parseEther('1.0')
+  // };
+  // walletMnemonic.signTransaction(tx);
+  // wallet.sendTransaction(tx);
+  // value = await owner.send({ to: address, value: 1e18, from: owner });
+  // value = await token.balanceOf(walletAddress);
+  // console.log('Balance is', value.toString());
+  // await token.withdraw(walletAddress);
+  // value = await token.balanceOf(walletAddress);
+  // console.log('Balance is', value.toString());
   // await hardhatToken.transfer(addr1.address, 50);
   // await box.store(23);
   // const newValue = await box.retrieve();
