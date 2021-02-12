@@ -34,7 +34,7 @@ contract GLDToken is ERC20, AccessControl {
   }
 
   modifier whitelisted() {
-    require(hasRole(MINTER_ROLE, msg.sender));
+    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
     _;
   }
 }

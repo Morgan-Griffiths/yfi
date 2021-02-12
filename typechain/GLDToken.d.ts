@@ -24,7 +24,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "MINTER_ROLE()": FunctionFragment;
-    "_isWhitelisted()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -53,10 +52,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "MINTER_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_isWhitelisted",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -134,10 +129,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "MINTER_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_isWhitelisted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
@@ -224,10 +215,6 @@ export class GLDToken extends Contract {
     MINTER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     "MINTER_ROLE()"(overrides?: CallOverrides): Promise<[string]>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<[boolean]>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<[boolean]>;
 
     allowance(
       owner: string,
@@ -432,10 +419,6 @@ export class GLDToken extends Contract {
 
   "MINTER_ROLE()"(overrides?: CallOverrides): Promise<string>;
 
-  _isWhitelisted(overrides?: CallOverrides): Promise<boolean>;
-
-  "_isWhitelisted()"(overrides?: CallOverrides): Promise<boolean>;
-
   allowance(
     owner: string,
     spender: string,
@@ -638,10 +621,6 @@ export class GLDToken extends Contract {
     MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     "MINTER_ROLE()"(overrides?: CallOverrides): Promise<string>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<boolean>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<boolean>;
 
     allowance(
       owner: string,
@@ -872,10 +851,6 @@ export class GLDToken extends Contract {
 
     "MINTER_ROLE()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    _isWhitelisted(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     allowance(
       owner: string,
       spender: string,
@@ -1083,12 +1058,6 @@ export class GLDToken extends Contract {
     MINTER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "MINTER_ROLE()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "_isWhitelisted()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     allowance(
       owner: string,
