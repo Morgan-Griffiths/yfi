@@ -12,14 +12,12 @@ contract GLDToken is ERC20, AccessControl {
     _setupRole(MINTER_ROLE, msg.sender);
   }
 
-  receive() external payable {
+  receive() external payable whitelisted {
     require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
     _mint(msg.sender, msg.value);
   }
 
-  function withdraw(uint256 amount) external {
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
+  function withdraw(uint256 amount) external whitelisted {
     require(
       balanceOf(msg.sender) >= amount,
       'Amount to withdraw exceeds address balance'
@@ -35,7 +33,8 @@ contract GLDToken is ERC20, AccessControl {
     _setupRole(MINTER_ROLE, recipient);
   }
 
-  function _isWhitelisted() public view returns (bool) {
-    return hasRole(MINTER_ROLE, msg.sender);
+  modifier whitelisted() {
+    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
+    _;
   }
 }

@@ -8,199 +8,190 @@ import {
   Signer,
   BigNumber,
   BigNumberish,
-  PopulatedTransaction,
-} from "ethers";
+  PopulatedTransaction
+} from 'ethers';
 import {
   Contract,
   ContractTransaction,
   Overrides,
-  CallOverrides,
-} from "@ethersproject/contracts";
-import { BytesLike } from "@ethersproject/bytes";
-import { Listener, Provider } from "@ethersproject/providers";
-import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
+  CallOverrides
+} from '@ethersproject/contracts';
+import { BytesLike } from '@ethersproject/bytes';
+import { Listener, Provider } from '@ethersproject/providers';
+import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi';
 
 interface GLDTokenInterface extends ethers.utils.Interface {
   functions: {
-    "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "MINTER_ROLE()": FunctionFragment;
-    "_isWhitelisted()": FunctionFragment;
-    "allowance(address,address)": FunctionFragment;
-    "approve(address,uint256)": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "decimals()": FunctionFragment;
-    "decreaseAllowance(address,uint256)": FunctionFragment;
-    "getRoleAdmin(bytes32)": FunctionFragment;
-    "getRoleMember(bytes32,uint256)": FunctionFragment;
-    "getRoleMemberCount(bytes32)": FunctionFragment;
-    "grantRole(bytes32,address)": FunctionFragment;
-    "hasRole(bytes32,address)": FunctionFragment;
-    "increaseAllowance(address,uint256)": FunctionFragment;
-    "name()": FunctionFragment;
-    "renounceRole(bytes32,address)": FunctionFragment;
-    "revokeRole(bytes32,address)": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "totalSupply()": FunctionFragment;
-    "transfer(address,uint256)": FunctionFragment;
-    "transferFrom(address,address,uint256)": FunctionFragment;
-    "whitelistAddress(address)": FunctionFragment;
-    "withdraw(uint256)": FunctionFragment;
+    'DEFAULT_ADMIN_ROLE()': FunctionFragment;
+    'MINTER_ROLE()': FunctionFragment;
+    'allowance(address,address)': FunctionFragment;
+    'approve(address,uint256)': FunctionFragment;
+    'balanceOf(address)': FunctionFragment;
+    'decimals()': FunctionFragment;
+    'decreaseAllowance(address,uint256)': FunctionFragment;
+    'getRoleAdmin(bytes32)': FunctionFragment;
+    'getRoleMember(bytes32,uint256)': FunctionFragment;
+    'getRoleMemberCount(bytes32)': FunctionFragment;
+    'grantRole(bytes32,address)': FunctionFragment;
+    'hasRole(bytes32,address)': FunctionFragment;
+    'increaseAllowance(address,uint256)': FunctionFragment;
+    'name()': FunctionFragment;
+    'renounceRole(bytes32,address)': FunctionFragment;
+    'revokeRole(bytes32,address)': FunctionFragment;
+    'symbol()': FunctionFragment;
+    'totalSupply()': FunctionFragment;
+    'transfer(address,uint256)': FunctionFragment;
+    'transferFrom(address,address,uint256)': FunctionFragment;
+    'whitelistAddress(address)': FunctionFragment;
+    'withdraw(uint256)': FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
+    functionFragment: 'DEFAULT_ADMIN_ROLE',
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "MINTER_ROLE",
+    functionFragment: 'MINTER_ROLE',
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "_isWhitelisted",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "allowance",
+    functionFragment: 'allowance',
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "approve",
+    functionFragment: 'approve',
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'balanceOf', values: [string]): string;
+  encodeFunctionData(functionFragment: 'decimals', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "decreaseAllowance",
+    functionFragment: 'decreaseAllowance',
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
+    functionFragment: 'getRoleAdmin',
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleMember",
+    functionFragment: 'getRoleMember',
     values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleMemberCount",
+    functionFragment: 'getRoleMemberCount',
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "grantRole",
+    functionFragment: 'grantRole',
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "hasRole",
+    functionFragment: 'hasRole',
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "increaseAllowance",
+    functionFragment: 'increaseAllowance',
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'name', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "renounceRole",
+    functionFragment: 'renounceRole',
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "revokeRole",
+    functionFragment: 'revokeRole',
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "totalSupply",
+    functionFragment: 'totalSupply',
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "transfer",
+    functionFragment: 'transfer',
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "transferFrom",
+    functionFragment: 'transferFrom',
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "whitelistAddress",
+    functionFragment: 'whitelistAddress',
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "withdraw",
+    functionFragment: 'withdraw',
     values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
+    functionFragment: 'DEFAULT_ADMIN_ROLE',
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "MINTER_ROLE",
+    functionFragment: 'MINTER_ROLE',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: 'allowance', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'decimals', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'decreaseAllowance',
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "_isWhitelisted",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "decreaseAllowance",
+    functionFragment: 'getRoleAdmin',
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
+    functionFragment: 'getRoleMember',
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleMember",
+    functionFragment: 'getRoleMemberCount',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: 'grantRole', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'hasRole', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'increaseAllowance',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'renounceRole',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: 'revokeRole', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'symbol', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'totalSupply',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: 'transfer', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'transferFrom',
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleMemberCount",
+    functionFragment: 'whitelistAddress',
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "increaseAllowance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceRole",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "transferFrom",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'withdraw', data: BytesLike): Result;
 
   events: {
-    "Approval(address,address,uint256)": EventFragment;
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
-    "RoleGranted(bytes32,address,address)": EventFragment;
-    "RoleRevoked(bytes32,address,address)": EventFragment;
-    "Transfer(address,address,uint256)": EventFragment;
+    'Approval(address,address,uint256)': EventFragment;
+    'RoleAdminChanged(bytes32,bytes32,bytes32)': EventFragment;
+    'RoleGranted(bytes32,address,address)': EventFragment;
+    'RoleRevoked(bytes32,address,address)': EventFragment;
+    'Transfer(address,address,uint256)': EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Approval'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'RoleAdminChanged'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'RoleGranted'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'RoleRevoked'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Transfer'): EventFragment;
 }
 
 export class GLDToken extends Contract {
@@ -219,15 +210,11 @@ export class GLDToken extends Contract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    "DEFAULT_ADMIN_ROLE()"(overrides?: CallOverrides): Promise<[string]>;
+    'DEFAULT_ADMIN_ROLE()'(overrides?: CallOverrides): Promise<[string]>;
 
     MINTER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    "MINTER_ROLE()"(overrides?: CallOverrides): Promise<[string]>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<[boolean]>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<[boolean]>;
+    'MINTER_ROLE()'(overrides?: CallOverrides): Promise<[string]>;
 
     allowance(
       owner: string,
@@ -235,7 +222,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    "allowance(address,address)"(
+    'allowance(address,address)'(
       owner: string,
       spender: string,
       overrides?: CallOverrides
@@ -247,7 +234,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "approve(address,uint256)"(
+    'approve(address,uint256)'(
       spender: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -255,14 +242,14 @@ export class GLDToken extends Contract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    "balanceOf(address)"(
+    'balanceOf(address)'(
       account: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
-    "decimals()"(overrides?: CallOverrides): Promise<[number]>;
+    'decimals()'(overrides?: CallOverrides): Promise<[number]>;
 
     decreaseAllowance(
       spender: string,
@@ -270,7 +257,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "decreaseAllowance(address,uint256)"(
+    'decreaseAllowance(address,uint256)'(
       spender: string,
       subtractedValue: BigNumberish,
       overrides?: Overrides
@@ -278,7 +265,7 @@ export class GLDToken extends Contract {
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
-    "getRoleAdmin(bytes32)"(
+    'getRoleAdmin(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -289,7 +276,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    "getRoleMember(bytes32,uint256)"(
+    'getRoleMember(bytes32,uint256)'(
       role: BytesLike,
       index: BigNumberish,
       overrides?: CallOverrides
@@ -300,7 +287,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    "getRoleMemberCount(bytes32)"(
+    'getRoleMemberCount(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
@@ -311,7 +298,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "grantRole(bytes32,address)"(
+    'grantRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -323,7 +310,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    "hasRole(bytes32,address)"(
+    'hasRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -335,7 +322,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "increaseAllowance(address,uint256)"(
+    'increaseAllowance(address,uint256)'(
       spender: string,
       addedValue: BigNumberish,
       overrides?: Overrides
@@ -343,7 +330,7 @@ export class GLDToken extends Contract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
-    "name()"(overrides?: CallOverrides): Promise<[string]>;
+    'name()'(overrides?: CallOverrides): Promise<[string]>;
 
     renounceRole(
       role: BytesLike,
@@ -351,7 +338,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "renounceRole(bytes32,address)"(
+    'renounceRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -363,7 +350,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "revokeRole(bytes32,address)"(
+    'revokeRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -371,11 +358,11 @@ export class GLDToken extends Contract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
+    'symbol()'(overrides?: CallOverrides): Promise<[string]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    'totalSupply()'(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transfer(
       recipient: string,
@@ -383,7 +370,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "transfer(address,uint256)"(
+    'transfer(address,uint256)'(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -396,7 +383,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "transferFrom(address,address,uint256)"(
+    'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
       amount: BigNumberish,
@@ -408,7 +395,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "whitelistAddress(address)"(
+    'whitelistAddress(address)'(
       recipient: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
@@ -418,7 +405,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "withdraw(uint256)"(
+    'withdraw(uint256)'(
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
@@ -426,15 +413,11 @@ export class GLDToken extends Contract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  "DEFAULT_ADMIN_ROLE()"(overrides?: CallOverrides): Promise<string>;
+  'DEFAULT_ADMIN_ROLE()'(overrides?: CallOverrides): Promise<string>;
 
   MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  "MINTER_ROLE()"(overrides?: CallOverrides): Promise<string>;
-
-  _isWhitelisted(overrides?: CallOverrides): Promise<boolean>;
-
-  "_isWhitelisted()"(overrides?: CallOverrides): Promise<boolean>;
+  'MINTER_ROLE()'(overrides?: CallOverrides): Promise<string>;
 
   allowance(
     owner: string,
@@ -442,7 +425,7 @@ export class GLDToken extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "allowance(address,address)"(
+  'allowance(address,address)'(
     owner: string,
     spender: string,
     overrides?: CallOverrides
@@ -454,7 +437,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "approve(address,uint256)"(
+  'approve(address,uint256)'(
     spender: string,
     amount: BigNumberish,
     overrides?: Overrides
@@ -462,14 +445,14 @@ export class GLDToken extends Contract {
 
   balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  "balanceOf(address)"(
+  'balanceOf(address)'(
     account: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
 
-  "decimals()"(overrides?: CallOverrides): Promise<number>;
+  'decimals()'(overrides?: CallOverrides): Promise<number>;
 
   decreaseAllowance(
     spender: string,
@@ -477,7 +460,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "decreaseAllowance(address,uint256)"(
+  'decreaseAllowance(address,uint256)'(
     spender: string,
     subtractedValue: BigNumberish,
     overrides?: Overrides
@@ -485,7 +468,7 @@ export class GLDToken extends Contract {
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
-  "getRoleAdmin(bytes32)"(
+  'getRoleAdmin(bytes32)'(
     role: BytesLike,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -496,7 +479,7 @@ export class GLDToken extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  "getRoleMember(bytes32,uint256)"(
+  'getRoleMember(bytes32,uint256)'(
     role: BytesLike,
     index: BigNumberish,
     overrides?: CallOverrides
@@ -507,7 +490,7 @@ export class GLDToken extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "getRoleMemberCount(bytes32)"(
+  'getRoleMemberCount(bytes32)'(
     role: BytesLike,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -518,7 +501,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "grantRole(bytes32,address)"(
+  'grantRole(bytes32,address)'(
     role: BytesLike,
     account: string,
     overrides?: Overrides
@@ -530,7 +513,7 @@ export class GLDToken extends Contract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  "hasRole(bytes32,address)"(
+  'hasRole(bytes32,address)'(
     role: BytesLike,
     account: string,
     overrides?: CallOverrides
@@ -542,7 +525,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "increaseAllowance(address,uint256)"(
+  'increaseAllowance(address,uint256)'(
     spender: string,
     addedValue: BigNumberish,
     overrides?: Overrides
@@ -550,7 +533,7 @@ export class GLDToken extends Contract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
-  "name()"(overrides?: CallOverrides): Promise<string>;
+  'name()'(overrides?: CallOverrides): Promise<string>;
 
   renounceRole(
     role: BytesLike,
@@ -558,7 +541,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "renounceRole(bytes32,address)"(
+  'renounceRole(bytes32,address)'(
     role: BytesLike,
     account: string,
     overrides?: Overrides
@@ -570,7 +553,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "revokeRole(bytes32,address)"(
+  'revokeRole(bytes32,address)'(
     role: BytesLike,
     account: string,
     overrides?: Overrides
@@ -578,11 +561,11 @@ export class GLDToken extends Contract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  "symbol()"(overrides?: CallOverrides): Promise<string>;
+  'symbol()'(overrides?: CallOverrides): Promise<string>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+  'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
   transfer(
     recipient: string,
@@ -590,7 +573,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "transfer(address,uint256)"(
+  'transfer(address,uint256)'(
     recipient: string,
     amount: BigNumberish,
     overrides?: Overrides
@@ -603,7 +586,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "transferFrom(address,address,uint256)"(
+  'transferFrom(address,address,uint256)'(
     sender: string,
     recipient: string,
     amount: BigNumberish,
@@ -615,7 +598,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "whitelistAddress(address)"(
+  'whitelistAddress(address)'(
     recipient: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
@@ -625,7 +608,7 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "withdraw(uint256)"(
+  'withdraw(uint256)'(
     amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
@@ -633,15 +616,11 @@ export class GLDToken extends Contract {
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    "DEFAULT_ADMIN_ROLE()"(overrides?: CallOverrides): Promise<string>;
+    'DEFAULT_ADMIN_ROLE()'(overrides?: CallOverrides): Promise<string>;
 
     MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    "MINTER_ROLE()"(overrides?: CallOverrides): Promise<string>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<boolean>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<boolean>;
+    'MINTER_ROLE()'(overrides?: CallOverrides): Promise<string>;
 
     allowance(
       owner: string,
@@ -649,7 +628,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "allowance(address,address)"(
+    'allowance(address,address)'(
       owner: string,
       spender: string,
       overrides?: CallOverrides
@@ -661,7 +640,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "approve(address,uint256)"(
+    'approve(address,uint256)'(
       spender: string,
       amount: BigNumberish,
       overrides?: CallOverrides
@@ -669,14 +648,14 @@ export class GLDToken extends Contract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "balanceOf(address)"(
+    'balanceOf(address)'(
       account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
 
-    "decimals()"(overrides?: CallOverrides): Promise<number>;
+    'decimals()'(overrides?: CallOverrides): Promise<number>;
 
     decreaseAllowance(
       spender: string,
@@ -684,7 +663,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "decreaseAllowance(address,uint256)"(
+    'decreaseAllowance(address,uint256)'(
       spender: string,
       subtractedValue: BigNumberish,
       overrides?: CallOverrides
@@ -692,7 +671,7 @@ export class GLDToken extends Contract {
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
-    "getRoleAdmin(bytes32)"(
+    'getRoleAdmin(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -703,7 +682,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    "getRoleMember(bytes32,uint256)"(
+    'getRoleMember(bytes32,uint256)'(
       role: BytesLike,
       index: BigNumberish,
       overrides?: CallOverrides
@@ -714,7 +693,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getRoleMemberCount(bytes32)"(
+    'getRoleMemberCount(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -725,7 +704,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "grantRole(bytes32,address)"(
+    'grantRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -737,7 +716,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "hasRole(bytes32,address)"(
+    'hasRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -749,7 +728,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "increaseAllowance(address,uint256)"(
+    'increaseAllowance(address,uint256)'(
       spender: string,
       addedValue: BigNumberish,
       overrides?: CallOverrides
@@ -757,7 +736,7 @@ export class GLDToken extends Contract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
-    "name()"(overrides?: CallOverrides): Promise<string>;
+    'name()'(overrides?: CallOverrides): Promise<string>;
 
     renounceRole(
       role: BytesLike,
@@ -765,7 +744,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "renounceRole(bytes32,address)"(
+    'renounceRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -777,7 +756,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "revokeRole(bytes32,address)"(
+    'revokeRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -785,11 +764,11 @@ export class GLDToken extends Contract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    "symbol()"(overrides?: CallOverrides): Promise<string>;
+    'symbol()'(overrides?: CallOverrides): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
       recipient: string,
@@ -797,7 +776,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "transfer(address,uint256)"(
+    'transfer(address,uint256)'(
       recipient: string,
       amount: BigNumberish,
       overrides?: CallOverrides
@@ -810,7 +789,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "transferFrom(address,address,uint256)"(
+    'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
       amount: BigNumberish,
@@ -822,14 +801,14 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "whitelistAddress(address)"(
+    'whitelistAddress(address)'(
       recipient: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     withdraw(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    "withdraw(uint256)"(
+    'withdraw(uint256)'(
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -866,15 +845,11 @@ export class GLDToken extends Contract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "DEFAULT_ADMIN_ROLE()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'DEFAULT_ADMIN_ROLE()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     MINTER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "MINTER_ROLE()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "_isWhitelisted()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'MINTER_ROLE()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     allowance(
       owner: string,
@@ -882,7 +857,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "allowance(address,address)"(
+    'allowance(address,address)'(
       owner: string,
       spender: string,
       overrides?: CallOverrides
@@ -894,7 +869,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "approve(address,uint256)"(
+    'approve(address,uint256)'(
       spender: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -902,14 +877,14 @@ export class GLDToken extends Contract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "balanceOf(address)"(
+    'balanceOf(address)'(
       account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "decimals()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'decimals()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     decreaseAllowance(
       spender: string,
@@ -917,7 +892,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "decreaseAllowance(address,uint256)"(
+    'decreaseAllowance(address,uint256)'(
       spender: string,
       subtractedValue: BigNumberish,
       overrides?: Overrides
@@ -928,7 +903,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getRoleAdmin(bytes32)"(
+    'getRoleAdmin(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -939,7 +914,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getRoleMember(bytes32,uint256)"(
+    'getRoleMember(bytes32,uint256)'(
       role: BytesLike,
       index: BigNumberish,
       overrides?: CallOverrides
@@ -950,7 +925,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getRoleMemberCount(bytes32)"(
+    'getRoleMemberCount(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -961,7 +936,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "grantRole(bytes32,address)"(
+    'grantRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -973,7 +948,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "hasRole(bytes32,address)"(
+    'hasRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -985,7 +960,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "increaseAllowance(address,uint256)"(
+    'increaseAllowance(address,uint256)'(
       spender: string,
       addedValue: BigNumberish,
       overrides?: Overrides
@@ -993,7 +968,7 @@ export class GLDToken extends Contract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'name()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceRole(
       role: BytesLike,
@@ -1001,7 +976,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "renounceRole(bytes32,address)"(
+    'renounceRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -1013,7 +988,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "revokeRole(bytes32,address)"(
+    'revokeRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -1021,11 +996,11 @@ export class GLDToken extends Contract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'symbol()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+    'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
       recipient: string,
@@ -1033,7 +1008,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "transfer(address,uint256)"(
+    'transfer(address,uint256)'(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -1046,7 +1021,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "transferFrom(address,address,uint256)"(
+    'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
       amount: BigNumberish,
@@ -1058,14 +1033,14 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "whitelistAddress(address)"(
+    'whitelistAddress(address)'(
       recipient: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     withdraw(amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
-    "withdraw(uint256)"(
+    'withdraw(uint256)'(
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
@@ -1076,19 +1051,13 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "DEFAULT_ADMIN_ROLE()"(
+    'DEFAULT_ADMIN_ROLE()'(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     MINTER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "MINTER_ROLE()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    _isWhitelisted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "_isWhitelisted()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    'MINTER_ROLE()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     allowance(
       owner: string,
@@ -1096,7 +1065,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "allowance(address,address)"(
+    'allowance(address,address)'(
       owner: string,
       spender: string,
       overrides?: CallOverrides
@@ -1108,7 +1077,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "approve(address,uint256)"(
+    'approve(address,uint256)'(
       spender: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -1119,14 +1088,14 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "balanceOf(address)"(
+    'balanceOf(address)'(
       account: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "decimals()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'decimals()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     decreaseAllowance(
       spender: string,
@@ -1134,7 +1103,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "decreaseAllowance(address,uint256)"(
+    'decreaseAllowance(address,uint256)'(
       spender: string,
       subtractedValue: BigNumberish,
       overrides?: Overrides
@@ -1145,7 +1114,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getRoleAdmin(bytes32)"(
+    'getRoleAdmin(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1156,7 +1125,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getRoleMember(bytes32,uint256)"(
+    'getRoleMember(bytes32,uint256)'(
       role: BytesLike,
       index: BigNumberish,
       overrides?: CallOverrides
@@ -1167,7 +1136,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getRoleMemberCount(bytes32)"(
+    'getRoleMemberCount(bytes32)'(
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1178,7 +1147,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "grantRole(bytes32,address)"(
+    'grantRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -1190,7 +1159,7 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "hasRole(bytes32,address)"(
+    'hasRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
@@ -1202,7 +1171,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "increaseAllowance(address,uint256)"(
+    'increaseAllowance(address,uint256)'(
       spender: string,
       addedValue: BigNumberish,
       overrides?: Overrides
@@ -1210,7 +1179,7 @@ export class GLDToken extends Contract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'name()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceRole(
       role: BytesLike,
@@ -1218,7 +1187,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "renounceRole(bytes32,address)"(
+    'renounceRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -1230,7 +1199,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "revokeRole(bytes32,address)"(
+    'revokeRole(bytes32,address)'(
       role: BytesLike,
       account: string,
       overrides?: Overrides
@@ -1238,11 +1207,11 @@ export class GLDToken extends Contract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'symbol()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'totalSupply()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transfer(
       recipient: string,
@@ -1250,7 +1219,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "transfer(address,uint256)"(
+    'transfer(address,uint256)'(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides
@@ -1263,7 +1232,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "transferFrom(address,address,uint256)"(
+    'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
       amount: BigNumberish,
@@ -1275,7 +1244,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "whitelistAddress(address)"(
+    'whitelistAddress(address)'(
       recipient: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
@@ -1285,7 +1254,7 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "withdraw(uint256)"(
+    'withdraw(uint256)'(
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
