@@ -22,7 +22,9 @@
     "@openzeppelin/contracts": "^3.4.0",
     "@typechain/ethers-v5": "^5.0.0",
     "@typechain/truffle-v5": "^4.0.1",
-    "@typechain/web3-v1": "^2.0.0"
+    "@typechain/web3-v1": "^2.0.0",
+    "@uniswap/sdk": "^3.0.3",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",

@@ -2,7 +2,7 @@
 // Load dependencies
 const Web3 = require('web3');
 const { expect } = require('chai');
-const {deployContract} = require('ethereum-waffle');
+const { deployContract } = require('ethereum-waffle');
 
 // Import utilities from Test Helpers
 const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
@@ -51,6 +51,19 @@ contract('GLDToken', function ([owner, other]) {
   });
   it('Get tokens, redeem tokens, get eth in return', async function () {
     await token.sendTransaction({ value: 1e18, from: owner });
+    expect(
+      Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
+    ).to.be.equal('1');
+    await token.withdraw(web3.utils.toWei('1', 'ether'), {
+      from: owner
+    });
+    expect(
+      Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
+    ).to.be.equal('0');
+  });
+  it('Swap eth to dai', async function () {
+    let deadline = 10;
+    await token.convertEthToDai({ value: 1e18, from: owner }, deadline);
     expect(
       Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
     ).to.be.equal('1');

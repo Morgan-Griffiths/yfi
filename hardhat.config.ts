@@ -7,7 +7,24 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('@nomiclabs/hardhat-waffle');
 module.exports = {
-  solidity: '0.6.12'
+  solidity: {
+    compilers: [
+      {
+        version: '0.5.0'
+      },
+      {
+        version: '0.5.13'
+      },
+      {
+        version: '0.6.6',
+        settings: {}
+      },
+      {
+        version: '0.6.12',
+        settings: {}
+      }
+    ]
+  }
 };
 // const config: HardhatUserConfig = {
 //   defaultNetwork: 'hardhat',
