@@ -12,10 +12,14 @@ async function main() {
   // console.log("Box deployed to:", box.address);
   const walletAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266';
   const Token = await ethers.getContractFactory('GLDToken');
+  const Test = await ethers.getContractFactory('Test');
   console.log('Deploying Token...');
   const token = await Token.deploy();
+  const test = await Test.deploy();
   await token.deployed();
+  await test.deployed();
   console.log('Token deployed to:', token.address);
+  console.log('Test deployed to:', test.address);
 }
 
 main()

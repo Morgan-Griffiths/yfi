@@ -1,27 +1,55 @@
 // scripts/index.js
 
+// const testAbi = [
+//   'function Add(uint256 a,uint256 b) external returns (uint256)'
+// ];
+
 async function main() {
   // Our code will go here
   // Retrieve accounts from the local node
   const [owner, addr1] = await ethers.getSigners();
   const accounts = await ethers.provider.listAccounts();
-  console.log(accounts);
+  // console.log(accounts);
 
   const walletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
-  const address = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
-  const GLDToken = await ethers.getContractFactory('GLDToken');
-  const token = await GLDToken.attach(address);
-  value = await token.balanceOf(walletAddress);
-  console.log('Balance is', value.toString());
-  console.log(Object.getOwnPropertyNames(token.signer));
-  console.log(Object.getOwnPropertyNames(owner.provider));
+  const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+  const testAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+  const GLDToken = await ethers.getContractFactory('GLDToken', owner);
+  // const Test = await ethers.getContractFactory('Test');
+  // const token = await GLDToken.attach(tokenAddress);
+  // const test = await Test.attach(testAddress);
+  // const test = await Test.deploy();
+  const token = await GLDToken.deploy();
+  // console.log(token.signer);
+
   // tx = {
-  //   to: '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-  //   value: utils.parseEther('1.0')
+  //   to: tokenAddress,
+  //   value: ethers.utils.parseEther('0.0')
   // };
-  // walletMnemonic.signTransaction(tx);
-  // wallet.sendTransaction(tx);
-  // value = await owner.send({ to: address, value: 1e18, from: owner });
+  // owner.signTransaction(tx);
+  // value = await owner.send({
+  //   to: tokenAddress,
+  //   value: 1e18,
+  //   from: owner
+  // });
+  const transactionResponse = await token.test();
+  const result = await transactionResponse.wait();
+  console.log(result);
+  // console.log(result.events[0].args); // result.events[0].decode());
+  // const test = new ethers.Contract(testAddress, testAbi, owner);
+  // token.sendTransaction({ value: 1e16, from: owner });
+  // const result = await token.test();
+  // console.log(result);
+  // value = await token.balanceOf(walletAddress);
+  // console.log('Balance is', value.toString());
+  // console.log(Object.getOwnPropertyNames(token.signer));
+  // console.log(Object.getOwnPropertyNames(owner.provider));
+  // owner.sendTransaction(tx);
+  // value = await accounts[0].send({
+  //   to: tokenAddress,
+  //   value: 1e18,
+  //   from: owner
+  // });
   // value = await token.balanceOf(walletAddress);
   // console.log('Balance is', value.toString());
   // await token.withdraw(walletAddress);

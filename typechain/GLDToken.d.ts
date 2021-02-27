@@ -14,7 +14,6 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -28,7 +27,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "convertEthToDai(uint256,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -41,9 +39,11 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "symbol()": FunctionFragment;
+    "test(address)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "uniswapFactory()": FunctionFragment;
     "uniswapRouter()": FunctionFragment;
     "whitelistAddress(address)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
@@ -66,10 +66,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "convertEthToDai",
-    values: [BigNumberish, BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "decreaseAllowance",
@@ -109,6 +105,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(functionFragment: "test", values: [string]): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
@@ -120,6 +117,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "uniswapFactory",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "uniswapRouter",
@@ -145,10 +146,6 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "convertEthToDai",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
@@ -179,6 +176,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "test", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -186,6 +184,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "uniswapFactory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -200,6 +202,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
+    "Pair(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
@@ -207,6 +210,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Pair"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
@@ -265,18 +269,6 @@ export class GLDToken extends Contract {
       account: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    convertEthToDai(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
-    ): Promise<ContractTransaction>;
-
-    "convertEthToDai(uint256,uint256)"(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
-    ): Promise<ContractTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
@@ -391,6 +383,13 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<[string]>;
 
+    test(token: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "test(address)"(
+      token: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -420,6 +419,10 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    uniswapFactory(overrides?: CallOverrides): Promise<[string]>;
+
+    "uniswapFactory()"(overrides?: CallOverrides): Promise<[string]>;
 
     uniswapRouter(overrides?: CallOverrides): Promise<[string]>;
 
@@ -484,18 +487,6 @@ export class GLDToken extends Contract {
     account: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  convertEthToDai(
-    ethAmount: BigNumberish,
-    deadline: BigNumberish,
-    overrides?: PayableOverrides
-  ): Promise<ContractTransaction>;
-
-  "convertEthToDai(uint256,uint256)"(
-    ethAmount: BigNumberish,
-    deadline: BigNumberish,
-    overrides?: PayableOverrides
-  ): Promise<ContractTransaction>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
 
@@ -610,6 +601,10 @@ export class GLDToken extends Contract {
 
   "symbol()"(overrides?: CallOverrides): Promise<string>;
 
+  test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "test(address)"(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -639,6 +634,10 @@ export class GLDToken extends Contract {
     amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  uniswapFactory(overrides?: CallOverrides): Promise<string>;
+
+  "uniswapFactory()"(overrides?: CallOverrides): Promise<string>;
 
   uniswapRouter(overrides?: CallOverrides): Promise<string>;
 
@@ -703,18 +702,6 @@ export class GLDToken extends Contract {
       account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    convertEthToDai(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "convertEthToDai(uint256,uint256)"(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
 
@@ -829,6 +816,13 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<string>;
 
+    test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "test(address)"(
+      token: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -859,6 +853,10 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    uniswapFactory(overrides?: CallOverrides): Promise<string>;
+
+    "uniswapFactory()"(overrides?: CallOverrides): Promise<string>;
+
     uniswapRouter(overrides?: CallOverrides): Promise<string>;
 
     "uniswapRouter()"(overrides?: CallOverrides): Promise<string>;
@@ -887,6 +885,8 @@ export class GLDToken extends Contract {
       spender: string | null,
       value: null
     ): EventFilter;
+
+    Pair(a: null, b: null): EventFilter;
 
     RoleAdminChanged(
       role: BytesLike | null,
@@ -947,18 +947,6 @@ export class GLDToken extends Contract {
     "balanceOf(address)"(
       account: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    convertEthToDai(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
-    ): Promise<BigNumber>;
-
-    "convertEthToDai(uint256,uint256)"(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1077,6 +1065,13 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "test(address)"(
+      token: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1106,6 +1101,10 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    uniswapFactory(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "uniswapFactory()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     uniswapRouter(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1174,18 +1173,6 @@ export class GLDToken extends Contract {
     "balanceOf(address)"(
       account: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    convertEthToDai(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "convertEthToDai(uint256,uint256)"(
-      ethAmount: BigNumberish,
-      deadline: BigNumberish,
-      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1304,6 +1291,16 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    test(
+      token: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "test(address)"(
+      token: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1332,6 +1329,12 @@ export class GLDToken extends Contract {
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    uniswapFactory(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "uniswapFactory()"(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     uniswapRouter(overrides?: CallOverrides): Promise<PopulatedTransaction>;

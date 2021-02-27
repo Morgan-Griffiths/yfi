@@ -23,6 +23,7 @@ export type { Auth } from "./Auth";
 export type { ILiquidityValueCalculator } from "./ILiquidityValueCalculator";
 export type { Uni } from "./Uni";
 export type { LiquidityValueCalculator } from "./LiquidityValueCalculator";
+export type { Test } from "./Test";
 export type { GLDToken } from "./GLDToken";
 
 export { AccessControl__factory } from "./factories/AccessControl__factory";
@@ -47,4 +48,5 @@ export { Auth__factory } from "./factories/Auth__factory";
 export { ILiquidityValueCalculator__factory } from "./factories/ILiquidityValueCalculator__factory";
 export { Uni__factory } from "./factories/Uni__factory";
 export { LiquidityValueCalculator__factory } from "./factories/LiquidityValueCalculator__factory";
+export { Test__factory } from "./factories/Test__factory";
 export { GLDToken__factory } from "./factories/GLDToken__factory";
