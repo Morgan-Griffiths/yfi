@@ -73,13 +73,36 @@ contract GLDToken is ERC20, AccessControl {
   // get eth amount to buy with
   // swap eth for token
   
-  function getAmountOut(address token,uint amountA) external view returns (uint256) {
-    address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    uint amountB = uniswapRouter.getAmountOut(amountA,tokenReserves,ethReserves);
-    return amountB;
+  function getAmountOut(address token,uint amountA) internal returns (uint256) {
+    // address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
+    // (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
+    // (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
+    // uint amountB = uniswapRouter.getAmountOut(amountA,tokenReserves,ethReserves);
+    return 30;
   }
+
+  // function convertEthToDai(uint amountOutMin, uint deadline) public {
+  //   address[] memory path = new address[](2);
+  //   path[0] = uniswapRouter.WETH();
+  //   path[1] = DAI_ADDRESS;
+
+  //   uniswapRouter.swapExactETHForTokens.value(msg.value)(uint amountOutMin, path, address(this), deadline);
+    
+  //   // refund leftover ETH to user
+  //   msg.sender.call.value(address(this).balance)("");
+  // }
+
+
+  // function convertDaiToEth(uint amountOutMin, uint deadline) public {
+  //   address[] memory path = new address[](2);
+  //   path[0] = uniswapRouter.WETH();
+  //   path[1] = DAI_ADDRESS;
+
+  //   uniswapRouter.swapExactTokensForEth.value(msg.value)(uint amountOutMin, path, address(this), deadline);
+    
+  //   // refund leftover ETH to user
+  //   msg.sender.call.value(address(this).balance)("");
+  // }
 
   // function test() public returns (uint256) {
   //   TestInterface t = TestInterface(0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0);
@@ -110,17 +133,6 @@ contract GLDToken is ERC20, AccessControl {
   //   return path;
   // }
 
-
-  function convertDaiToEth(uint daiAmount, uint deadline) public {
-    address[] memory path = new address[](2);
-    path[0] = uniswapRouter.WETH();
-    path[1] = DAI_ADDRESS;
-
-    uniswapRouter.swapExactTokensForEth.value(msg.value)(amountOutMin, path, address(this), deadline);
-    
-    // refund leftover ETH to user
-    msg.sender.call.value(address(this).balance)("");
-  }
 
   // function swap(address tokenA, address tokenB) public {
   //   uint256 amountIn = 50 * 10**DAI.decimals();
