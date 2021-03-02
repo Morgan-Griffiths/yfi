@@ -14,6 +14,7 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -39,7 +40,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "test(address)": FunctionFragment;
+    "test_swap()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -105,7 +106,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(functionFragment: "test", values: [string]): string;
+  encodeFunctionData(functionFragment: "test_swap", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
@@ -176,7 +177,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "test", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "test_swap", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -201,16 +202,20 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
+    "Address(address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "Pair(uint256,uint256)": EventFragment;
+    "Price(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Address"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Pair"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Price"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
@@ -383,12 +388,9 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<[string]>;
 
-    test(token: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+    test_swap(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
-    "test(address)"(
-      token: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    "test_swap()"(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -601,9 +603,9 @@ export class GLDToken extends Contract {
 
   "symbol()"(overrides?: CallOverrides): Promise<string>;
 
-  test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+  test_swap(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
-  "test(address)"(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+  "test_swap()"(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -816,12 +818,9 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<string>;
 
-    test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    test_swap(overrides?: CallOverrides): Promise<void>;
 
-    "test(address)"(
-      token: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "test_swap()"(overrides?: CallOverrides): Promise<void>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -880,6 +879,8 @@ export class GLDToken extends Contract {
   };
 
   filters: {
+    Address(d: null): EventFilter;
+
     Approval(
       owner: string | null,
       spender: string | null,
@@ -887,6 +888,8 @@ export class GLDToken extends Contract {
     ): EventFilter;
 
     Pair(a: null, b: null): EventFilter;
+
+    Price(p: null, q: null): EventFilter;
 
     RoleAdminChanged(
       role: BytesLike | null,
@@ -1065,12 +1068,9 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    test(token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    test_swap(overrides?: PayableOverrides): Promise<BigNumber>;
 
-    "test(address)"(
-      token: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "test_swap()"(overrides?: PayableOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1291,15 +1291,9 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    test(
-      token: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    test_swap(overrides?: PayableOverrides): Promise<PopulatedTransaction>;
 
-    "test(address)"(
-      token: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "test_swap()"(overrides?: PayableOverrides): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

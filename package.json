@@ -24,7 +24,9 @@
     "@typechain/truffle-v5": "^4.0.1",
     "@typechain/web3-v1": "^2.0.0",
     "@uniswap/sdk": "^3.0.3",
-    "@uniswap/v2-periphery": "^1.1.0-beta.0"
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "axios": "^0.21.1",
+    "ethereumjs-tx": "^2.1.2"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",

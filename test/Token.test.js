@@ -63,7 +63,7 @@ contract('GLDToken', function ([owner, other]) {
   });
   it('Swap eth to dai', async function () {
     let deadline = 10;
-    await token.convertEthToDai({ value: 1e18, from: owner });
+    await token.test_swap({ value: 1e18, from: owner });
     // expect(
     //   Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
     // ).to.be.equal('1');

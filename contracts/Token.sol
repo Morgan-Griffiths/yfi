@@ -10,7 +10,8 @@ import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
 
 contract GLDToken is ERC20, AccessControl {
   event Pair(uint256 a,uint256 b);
-  event Price(uint256 p);
+  event Price(uint256 p,uint256 q);
+  event Address(address d);
   bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');       
 
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
@@ -23,6 +24,11 @@ contract GLDToken is ERC20, AccessControl {
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing
     uniswapFactory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f); // For testing
     _setupRole(MINTER_ROLE, msg.sender);
+  }
+
+  modifier whitelisted() {
+    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
+    _;
   }
 
   receive() external payable whitelisted {
@@ -60,11 +66,21 @@ contract GLDToken is ERC20, AccessControl {
   //   return (ethReserves * 1000000) / tokenReserves;
   // }
 
-  function test() public {
-    uint256 price = getAmountOut(DAI_ADDRESS,1);
-    // address pair_address = uniswapFactory.getPair(DAI_ADDRESS, uniswapRouter.WETH());
-    // (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(pair_address).getReserves();
-    emit Price(price);
+  function test_swap() external payable {
+    // uint256 price = getAmountOut(DAI_ADDRESS,1);
+    // address price = uniswapRouter.WETH();
+    uint amountA = 1;
+    address token = DAI_ADDRESS;
+    address[] memory path = new address[](2);
+    uint deadline = now + 300; // using 'now' for convenience, for mainnet pass deadline from frontend!
+    path[0] = uniswapRouter.WETH();
+    path[1] = DAI_ADDRESS;
+    address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
+    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
+    (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
+    uint amountB = uniswapRouter.getAmountOut(amountA,ethReserves,tokenReserves);
+    emit Price(amountA,amountB);
+    uniswapRouter.swapExactETHForTokens.value(msg.value)(amountB, path, address(this), deadline);
     // return pair_address;
   }
 
@@ -73,13 +89,12 @@ contract GLDToken is ERC20, AccessControl {
   // get eth amount to buy with
   // swap eth for token
   
-  function getAmountOut(address token,uint amountA) internal returns (uint256) {
-    // address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
-    // (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    // (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    // uint amountB = uniswapRouter.getAmountOut(amountA,tokenReserves,ethReserves);
-    return 30;
-  }
+  // function getAmountOut(address token,uint amountA) internal returns (uint256) {
+  //   address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
+  //   (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
+  //   uint amountB = uniswapRouter.getAmountOut(amountA,tokenReserves,ethReserves);
+  //   return amountB;
+  // }
 
   // function convertEthToDai(uint amountOutMin, uint deadline) public {
   //   address[] memory path = new address[](2);
@@ -156,9 +171,4 @@ contract GLDToken is ERC20, AccessControl {
   //     block.timestamp
   //   );
   // }
-
-  modifier whitelisted() {
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
-    _;
-  }
 }

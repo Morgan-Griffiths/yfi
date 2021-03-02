@@ -1,8 +1,74 @@
 // scripts/index.js
 
-// const testAbi = [
-//   'function Add(uint256 a,uint256 b) external returns (uint256)'
-// ];
+const { getTypeParameterOwner } = require('typescript');
+const { Web3 } = require('web3');
+const axios = require('axios');
+const Tx = require('ethereumjs-tx').Transaction;
+const { ethers } = require('ethers');
+
+CHAINID = 1;
+CHAIN_DICT = {
+  1: 'mainnet',
+  4: 'rinkeby'
+};
+NETWORK = CHAIN_DICT[CHAINID];
+TRANSACTION_URL =
+  CHAINID != 1
+    ? `https://${NETWORK}.etherscan.io/tx/`
+    : `https://etherscan.io/tx/`;
+
+async function callback(err, result) {
+  if (err) return console.log(err);
+  console.log(`sent ${TRANSACTION_URL}${result}`);
+}
+
+async function getCurrentGasPrices() {
+  let response = await axios.get(
+    'https://ethgasstation.info/json/ethgasAPI.json'
+  );
+  let prices = {
+    low: response.data.safeLow / 10,
+    medium: response.data.average / 10,
+    high: response.data.fast / 10
+  };
+  console.log('\r\n');
+  console.log(`Current ETH Gas Prices (in GWEI):`);
+  console.log('\r\n');
+  console.log(`Low: ${prices.low} (transaction completes in < 30 minutes)`);
+  console.log(
+    `Standard: ${prices.medium} (transaction completes in < 5 minutes)`
+  );
+  console.log(`Fast: ${prices.high} (transaction completes in < 2 minutes)`);
+  console.log('\r\n');
+  return prices;
+}
+
+function sendSigned(txData, private_key, cb) {
+  const privateKey = Buffer.from(private_key, 'hex');
+  const transaction = new Tx(txData, { chain: CHAINID });
+  transaction.sign(privateKey);
+  const serializedTx = transaction.serialize().toString('hex');
+  web3.eth.sendSignedTransaction('0x' + serializedTx, cb);
+}
+
+async function sendMoney(amountToSend, fromAddress, toAddress, encodedABI) {
+  let nonce = await web3.eth.getTransactionCount(fromAddress);
+  console.log(
+    `The outgoing transaction count for your wallet address is: ${nonce}`
+  );
+  let gasPrices = await getCurrentGasPrices();
+  let txData = {
+    to: toAddress,
+    value: web3.utils.toHex(web3.utils.toWei(amountToSend, 'ether')),
+    gas: 21000,
+    gasPrice: web3.utils.toHex(web3.utils.toWei(`${gasPrices.medium}`, 'gwei')), // converts the gwei price to wei
+    nonce: nonce,
+    from: fromAddress,
+    chainId: CHAINID,
+    data: encodedABI
+  };
+  sendSigned(txData);
+}
 
 async function main() {
   // Our code will go here
@@ -20,10 +86,17 @@ async function main() {
   // const test = await Test.attach(testAddress);
   // const test = await Test.deploy();
   const token = await GLDToken.deploy();
-  // console.log(token.signer);
 
+  // console.log(token.interface);
+  // console.log(Object.getOwnPropertyNames(token));
+  ethers.Contract(token.address, token.interface, owner);
+  const tx = routerContract.methods.test_swap();
+  const encodedABI = tx.encodeABI();
+  sendMoney('1.0', owner.address, token.address, encodedABI);
+  // console.log(token.signer);
+  // console.log(token);
   // tx = {
-  //   to: tokenAddress,
+  //   to: token.address,
   //   value: ethers.utils.parseEther('0.0')
   // };
   // owner.signTransaction(tx);
@@ -32,9 +105,12 @@ async function main() {
   //   value: 1e18,
   //   from: owner
   // });
-  const transactionResponse = await token.test();
-  const result = await transactionResponse.wait();
-  console.log(result);
+  // const transactionResponse = await token.test_swap({
+  //   value: 1e18,
+  //   from: owner
+  // });
+  // const result = await transactionResponse.wait();
+  // console.log(result['events'][0], result['events'][0].args);
   // console.log(result.events[0].args); // result.events[0].decode());
   // const test = new ethers.Contract(testAddress, testAbi, owner);
   // token.sendTransaction({ value: 1e16, from: owner });
