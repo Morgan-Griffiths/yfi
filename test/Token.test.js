@@ -7,6 +7,9 @@ const { deployContract } = require('ethereum-waffle');
 // Import utilities from Test Helpers
 const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 
+const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
+const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 // Load compiled artifacts
 const Token = artifacts.require('GLDToken');
 
@@ -15,6 +18,10 @@ contract('GLDToken', function ([owner, other]) {
   let token;
   beforeEach(async function () {
     token = await Token.new({ from: owner });
+    await token.setStrategy(
+      [('5000000', '5000000')],
+      [DAI_ADDRESS, WBTC_ADDRESS]
+    );
   });
   // Testing whitelisting
   it('On create sets creater to correct role', async function () {
@@ -61,13 +68,12 @@ contract('GLDToken', function ([owner, other]) {
       Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
     ).to.be.equal('0');
   });
-  it('Swap eth to dai', async function () {
-    let deadline = 10;
-    await token.test_swap({ value: 1e18, from: owner });
-    // expect(
-    //   Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
-    // ).to.be.equal('1');
-  });
+  // it('Swap eth to dai', async function () {
+  //   await token.test_swap({ value: `${1e18}` });
+  // expect(
+  //   Web3.utils.fromWei(await token.balanceOf(owner), 'ether')
+  // ).to.be.equal('1');
+  // });
   // const fundRaiseAddress = await token.address;
   // assert.equal(web3.eth.getBalance(fundRaiseAddress).toNumber(), 1e18);
   // const objectList = await ethers.getSigners();
