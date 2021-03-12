@@ -31,14 +31,16 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "deposit()": FunctionFragment;
+    "ethDeposited()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
     "getRoleMemberCount(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
-    "migratePortfolio()": FunctionFragment;
+    "migratePortfolio(uint256[],address[])": FunctionFragment;
     "name()": FunctionFragment;
+    "portfolioPerformance()": FunctionFragment;
     "readAddresses()": FunctionFragment;
     "readWeights()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
@@ -47,6 +49,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "setStrategy(uint256[],address[])": FunctionFragment;
     "setWeights(uint256[])": FunctionFragment;
     "symbol()": FunctionFragment;
+    "token_balance(address)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -55,6 +58,7 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "valuePortfolio()": FunctionFragment;
     "whitelistAddress(address)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
+    "withdrawRaw()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -81,6 +85,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "ethDeposited",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
   ): string;
@@ -106,9 +114,13 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "migratePortfolio",
-    values?: undefined
+    values: [BigNumberish[], string[]]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "portfolioPerformance",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "readAddresses",
     values?: undefined
@@ -138,6 +150,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     values: [BigNumberish[]]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "token_balance",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
@@ -170,6 +186,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     functionFragment: "withdraw",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawRaw",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
@@ -188,6 +208,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "ethDeposited",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
@@ -212,6 +236,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "portfolioPerformance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "readAddresses",
     data: BytesLike
   ): Result;
@@ -234,6 +262,10 @@ interface GLDTokenInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setWeights", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "token_balance",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -260,14 +292,15 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawRaw",
+    data: BytesLike
+  ): Result;
 
   events: {
-    "Address(address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
-    "Array(uint256[])": EventFragment;
     "Balance(uint256)": EventFragment;
-    "Pair(uint256,uint256)": EventFragment;
-    "Price(uint256,uint256)": EventFragment;
+    "Performance(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
@@ -275,12 +308,9 @@ interface GLDTokenInterface extends ethers.utils.Interface {
     "Variable(uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Address"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Array"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Balance"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Pair"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Price"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Performance"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
@@ -361,6 +391,10 @@ export class GLDToken extends Contract {
 
     "deposit()"(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
+    ethDeposited(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "ethDeposited()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
     "getRoleAdmin(bytes32)"(
@@ -426,13 +460,27 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    migratePortfolio(overrides?: CallOverrides): Promise<[void]>;
+    migratePortfolio(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
-    "migratePortfolio()"(overrides?: CallOverrides): Promise<[void]>;
+    "migratePortfolio(uint256[],address[])"(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
     "name()"(overrides?: CallOverrides): Promise<[string]>;
+
+    portfolioPerformance(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "portfolioPerformance()"(
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     readAddresses(overrides?: CallOverrides): Promise<[string[]]>;
 
@@ -502,6 +550,16 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<[string]>;
 
+    token_balance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "token_balance(address)"(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -563,6 +621,10 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    withdrawRaw(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "withdrawRaw()"(overrides?: Overrides): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -623,6 +685,10 @@ export class GLDToken extends Contract {
   deposit(overrides?: PayableOverrides): Promise<ContractTransaction>;
 
   "deposit()"(overrides?: PayableOverrides): Promise<ContractTransaction>;
+
+  ethDeposited(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "ethDeposited()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -689,13 +755,25 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  migratePortfolio(overrides?: CallOverrides): Promise<void>;
+  migratePortfolio(
+    _weights: BigNumberish[],
+    _addresses: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
-  "migratePortfolio()"(overrides?: CallOverrides): Promise<void>;
+  "migratePortfolio(uint256[],address[])"(
+    _weights: BigNumberish[],
+    _addresses: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
   "name()"(overrides?: CallOverrides): Promise<string>;
+
+  portfolioPerformance(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "portfolioPerformance()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   readAddresses(overrides?: CallOverrides): Promise<string[]>;
 
@@ -765,6 +843,16 @@ export class GLDToken extends Contract {
 
   "symbol()"(overrides?: CallOverrides): Promise<string>;
 
+  token_balance(
+    tokenAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "token_balance(address)"(
+    tokenAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -827,6 +915,10 @@ export class GLDToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  withdrawRaw(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "withdrawRaw()"(overrides?: Overrides): Promise<ContractTransaction>;
+
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -886,6 +978,10 @@ export class GLDToken extends Contract {
     deposit(overrides?: CallOverrides): Promise<void>;
 
     "deposit()"(overrides?: CallOverrides): Promise<void>;
+
+    ethDeposited(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "ethDeposited()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -952,13 +1048,29 @@ export class GLDToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    migratePortfolio(overrides?: CallOverrides): Promise<void>;
+    migratePortfolio(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
-    "migratePortfolio()"(overrides?: CallOverrides): Promise<void>;
+    "migratePortfolio(uint256[],address[])"(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
     "name()"(overrides?: CallOverrides): Promise<string>;
+
+    portfolioPerformance(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber]>;
+
+    "portfolioPerformance()"(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber]>;
 
     readAddresses(overrides?: CallOverrides): Promise<string[]>;
 
@@ -1028,6 +1140,16 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<string>;
 
+    token_balance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "token_balance(address)"(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1086,24 +1208,22 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawRaw(overrides?: CallOverrides): Promise<void>;
+
+    "withdrawRaw()"(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
-    Address(d: null): EventFilter;
-
     Approval(
       owner: string | null,
       spender: string | null,
       value: null
     ): EventFilter;
 
-    Array(array: null): EventFilter;
-
     Balance(balance: null): EventFilter;
 
-    Pair(a: null, b: null): EventFilter;
-
-    Price(p: null, q: null): EventFilter;
+    Performance(EthDeposited: null, PortfolioValue: null): EventFilter;
 
     RoleAdminChanged(
       role: BytesLike | null,
@@ -1188,6 +1308,10 @@ export class GLDToken extends Contract {
 
     "deposit()"(overrides?: PayableOverrides): Promise<BigNumber>;
 
+    ethDeposited(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "ethDeposited()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     getRoleAdmin(
       role: BytesLike,
       overrides?: CallOverrides
@@ -1256,13 +1380,25 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    migratePortfolio(overrides?: CallOverrides): Promise<BigNumber>;
+    migratePortfolio(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
-    "migratePortfolio()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "migratePortfolio(uint256[],address[])"(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    portfolioPerformance(overrides?: Overrides): Promise<BigNumber>;
+
+    "portfolioPerformance()"(overrides?: Overrides): Promise<BigNumber>;
 
     readAddresses(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1332,6 +1468,16 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    token_balance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "token_balance(address)"(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1390,6 +1536,10 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    withdrawRaw(overrides?: Overrides): Promise<BigNumber>;
+
+    "withdrawRaw()"(overrides?: Overrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1459,6 +1609,10 @@ export class GLDToken extends Contract {
 
     "deposit()"(overrides?: PayableOverrides): Promise<PopulatedTransaction>;
 
+    ethDeposited(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "ethDeposited()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getRoleAdmin(
       role: BytesLike,
       overrides?: CallOverrides
@@ -1527,15 +1681,27 @@ export class GLDToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    migratePortfolio(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    migratePortfolio(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
-    "migratePortfolio()"(
-      overrides?: CallOverrides
+    "migratePortfolio(uint256[],address[])"(
+      _weights: BigNumberish[],
+      _addresses: string[],
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    portfolioPerformance(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "portfolioPerformance()"(
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     readAddresses(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1605,6 +1771,16 @@ export class GLDToken extends Contract {
 
     "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    token_balance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "token_balance(address)"(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1668,5 +1844,9 @@ export class GLDToken extends Contract {
       amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
+
+    withdrawRaw(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "withdrawRaw()"(overrides?: Overrides): Promise<PopulatedTransaction>;
   };
 }

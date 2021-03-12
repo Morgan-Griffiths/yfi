@@ -22,10 +22,11 @@ export type { UniswapV2Router02 } from "./UniswapV2Router02";
 export type { Auth } from "./Auth";
 export type { ILiquidityValueCalculator } from "./ILiquidityValueCalculator";
 export type { Uni } from "./Uni";
+export type { IBFIToken } from "./IBFIToken";
 export type { LiquidityValueCalculator } from "./LiquidityValueCalculator";
-export type { Strategy } from "./Strategy";
-export type { Test } from "./Test";
-export type { GLDToken } from "./GLDToken";
+export type { Swaps } from "./Swaps";
+export type { BFIToken } from "./BFIToken";
+export type { Voting } from "./Voting";
 export type { Yong } from "./Yong";
 
 export { AccessControl__factory } from "./factories/AccessControl__factory";
@@ -49,8 +50,9 @@ export { UniswapV2Router02__factory } from "./factories/UniswapV2Router02__facto
 export { Auth__factory } from "./factories/Auth__factory";
 export { ILiquidityValueCalculator__factory } from "./factories/ILiquidityValueCalculator__factory";
 export { Uni__factory } from "./factories/Uni__factory";
+export { IBFIToken__factory } from "./factories/IBFIToken__factory";
 export { LiquidityValueCalculator__factory } from "./factories/LiquidityValueCalculator__factory";
-export { Strategy__factory } from "./factories/Strategy__factory";
-export { Test__factory } from "./factories/Test__factory";
-export { GLDToken__factory } from "./factories/GLDToken__factory";
+export { Swaps__factory } from "./factories/Swaps__factory";
+export { BFIToken__factory } from "./factories/BFIToken__factory";
+export { Voting__factory } from "./factories/Voting__factory";
 export { Yong__factory } from "./factories/Yong__factory";
