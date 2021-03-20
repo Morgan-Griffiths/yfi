@@ -33,16 +33,16 @@ contract Voting {
   // address payable internal constant BFI_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
 
   constructor(address[] memory whitelistedAddresses,address tokenAddress) public {
-    address BFI_ADDRESS = tokenAddress;
-    token = IBFIToken(BFI_ADDRESS);
+    token = IBFIToken(tokenAddress);
     chairperson = msg.sender;
     // Look up all token holders in sister contract
-    // Construct all voters
+    // Construct all voters 
     numVoters = whitelistedAddresses.length;
     for (uint i=0;i<whitelistedAddresses.length;i++) {
       voterLookup[whitelistedAddresses[i]] = Voter(1,false,0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,0,0);
     }
   }
+  receive() external payable {}
   function addProposal(string memory name,address[] memory _tokenAddresses,uint[] memory _weights) public {
     // require(msg.sender == chairperson,'Only the chair can add a proposal');
     require(voterLookup[msg.sender].proposals == 0,'Each member may only present 1 proposal');
@@ -60,6 +60,12 @@ contract Voting {
       }
     }
     return (idWinner,maxVotes);
+  }
+  function addVoters(address[] memory _addresses) external {
+    require(msg.sender == chairperson,'Only chairperson can add addresses');
+    for (uint i=0;i<_addresses.length;i++) {
+      voterLookup[_addresses[i]] = Voter(1,false,0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,0,0);
+    }
   }
   function delegate(address to) public {
       // assigns reference
@@ -92,11 +98,13 @@ contract Voting {
     totalVotes += 1;
     emit votedEvent(id);
   }
-  function reset() external {
-    proposalCount = 0;
+  function getProposal(uint index) external view returns (string memory,address[] memory,uint[] memory,uint) {
+    Proposal memory proposal = proposalLookup[index];
+    return (proposal.name,proposal.tokenAddresses,proposal.weights,proposal.voteCount);
   }
   function executeProposal() external {
     // trigger migrate porfolio in token
+    require(totalVotes > (numVoters / 2),'Not enough votes');
     (uint winnerId,uint maxVotes) = getWinner();
     Proposal memory winningProposal = proposalLookup[winnerId];
     uint[] memory _weight = winningProposal.weights;
