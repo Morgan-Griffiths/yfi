@@ -19,10 +19,6 @@ contract BFIToken is ERC20, AccessControl {
   uint256 private _ethDeposited;
 
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
-  address internal constant DAI_ADDRESS = 0x6B175474E89094C44Da98b954EedeAC495271d0F ;
-  address internal constant WBTC_ADDRESS =
-    0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
-  // IUniswapV2Router02 public uniswapRouter;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
 
@@ -37,8 +33,8 @@ contract BFIToken is ERC20, AccessControl {
   receive() external payable {}
 
   function whitelistAddress(address recipient) public {
-    require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a minter');
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
+    require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a boss');
+    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a boss');
     _setupRole(MINTER_ROLE, recipient);
   }
 
@@ -205,7 +201,7 @@ contract BFIToken is ERC20, AccessControl {
     return portfolio_balance;
   }
   
-  function migratePortfolio(uint[] memory _weights,address[] memory _addresses) external {
+  function migratePortfolio(uint[] memory _weights,address[] memory _addresses) external whitelisted {
     // basic functionality -> sell everything, reinvest everything
     uint256 eth_amount = 0;
     for (uint i=0;i<tokenAddresses.length;i++) {
