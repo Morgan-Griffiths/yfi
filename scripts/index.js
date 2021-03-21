@@ -3,7 +3,6 @@
 const { getTypeParameterOwner } = require('typescript');
 const { BigNumber } = require('ethers');
 const erc20_abi = require('../erc20abi.json');
-var fs = require('fs');
 
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
@@ -49,7 +48,6 @@ async function main() {
 
   // console.log(token.interface);
   // console.log(Object.getOwnPropertyNames(token));
-  // const contract = new ethers.Contract(token.address, token.interface, owner);
   // result = await token.test_swap({
   //   value: `${1 * 1e18}`
   // });

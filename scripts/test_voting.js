@@ -44,15 +44,6 @@ async function main() {
   // const test = await Test.attach(testAddress);
   // const test = await Test.deploy();
   // ,
-  // fs.writeFileSync(
-  //   'voting_abi.json',
-  //   stratContract.interface.format('json'),
-  //   function (err) {
-  //     if (err) {
-  //       return console.error(err);
-  //     }
-  //   }
-  // );
   const token = await BFIToken.deploy(
     ['500000', '500000'],
     [DAI_ADDRESS, WBTC_ADDRESS]
