@@ -19,7 +19,7 @@ contract('GLDToken', function ([owner, other]) {
   beforeEach(async function () {
     token = await Token.new({ from: owner });
     await token.setStrategy(
-      [('5000000', '5000000')],
+      ['5000000', '5000000'],
       [DAI_ADDRESS, WBTC_ADDRESS]
     );
   });

@@ -2,7 +2,8 @@
 
 const { BigNumber } = require('ethers');
 const { ConsoleLogger } = require('ts-generator/dist/logger');
-const erc20_abi = require('./erc20abi.json');
+const erc20_abi = require('../erc20abi.json');
+var fs = require('fs');
 
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
@@ -43,14 +44,24 @@ async function main() {
   // const test = await Test.attach(testAddress);
   // const test = await Test.deploy();
   // ,
+  // fs.writeFileSync(
+  //   'voting_abi.json',
+  //   stratContract.interface.format('json'),
+  //   function (err) {
+  //     if (err) {
+  //       return console.error(err);
+  //     }
+  //   }
+  // );
   const token = await BFIToken.deploy(
     ['500000', '500000'],
     [DAI_ADDRESS, WBTC_ADDRESS]
   );
   const votingContract = await stratContract.deploy(
-    [owner.address, addr1.address, addr2.address],
+    [owner.address, addr1.address],
     token.address
   );
+  await token.whitelistAddress(votingContract.address);
   await votingContract.addProposal(
     'Hippo',
     [LINK_ADDRESS, API3_ADDRESS],
@@ -75,7 +86,7 @@ async function main() {
   console.log('Api3 Balance', parseInt(api3_balance._hex, 16));
   let executeProposal = await votingContract.executeProposal();
   let finalResult = await executeProposal.wait();
-  // console.log(finalResult);
+  console.log(finalResult);
 
   console.log('Token Balance', await token.balanceOf(owner.address));
   dai_balance = await dai.balanceOf(token.address);

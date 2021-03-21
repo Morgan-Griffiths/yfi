@@ -2,7 +2,8 @@
 
 const { getTypeParameterOwner } = require('typescript');
 const { BigNumber } = require('ethers');
-const erc20_abi = require('./erc20abi.json');
+const erc20_abi = require('../erc20abi.json');
+var fs = require('fs');
 
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
@@ -32,6 +33,7 @@ async function main() {
   const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
   const testAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
   const BFIToken = await ethers.getContractFactory('BFIToken', owner);
+  // console.log(BFIToken.interface.format('json'));
   const dai = new ethers.Contract(DAI_ADDRESS, erc20_abi, owner);
   const wbtc = new ethers.Contract(WBTC_ADDRESS, erc20_abi, owner);
   const link = new ethers.Contract(LINK_ADDRESS, erc20_abi, owner);
