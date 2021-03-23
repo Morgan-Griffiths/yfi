@@ -13,3 +13,12 @@ fs.writeFileSync(
     }
   }
 );
+fs.writeFileSync(
+  'token_abi.json',
+  BFIToken.interface.format('json'),
+  function (err) {
+    if (err) {
+      return console.error(err);
+    }
+  }
+);

@@ -7,12 +7,6 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('@nomiclabs/hardhat-waffle');
 module.exports = {
-  network: {
-    hardhat: {},
-    localhost: {
-      timeout: 10000
-    }
-  },
   solidity: {
     compilers: [
       {
@@ -22,8 +16,7 @@ module.exports = {
         version: '0.5.13'
       },
       {
-        version: '0.6.6',
-        settings: {}
+        version: '0.6.6'
       },
       {
         version: '0.6.12',
@@ -32,6 +25,15 @@ module.exports = {
     ]
   },
   networks: {
+    hardhat: {
+      timeout: 20000
+    },
+    localhost: {
+      timeout: 20000
+    },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_ACCESS_TOKEN}`
+    },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_ACCESS_TOKEN}`,
       accounts: [`0x${process.env.TEST_PRIVATE_KEY}`]

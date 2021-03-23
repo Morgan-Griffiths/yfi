@@ -6,7 +6,7 @@ import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
 
-contract Swaps is ERC20 {
+contract UNISwaps is ERC20 {
   event Variable(uint256 amount);
   event Address(address tokenAddress);
   address[] tokenAddresses;
@@ -19,7 +19,7 @@ contract Swaps is ERC20 {
     0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
-  constructor(uint[] memory _weights,address[] memory _addresses) public ERC20('Swap', 'SWP')  {
+  constructor(uint[] memory _weights,address[] memory _addresses) public ERC20('UNISwap', 'SWP')  {
     tokenAddresses = _addresses;
     weights = _weights;
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing

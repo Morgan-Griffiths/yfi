@@ -15,7 +15,7 @@ const pair_abi = [
 const uni_fact_abi = [
   'function getPair(address tokenA, address tokenB) external view returns (address pair)'
 ];
-const erc20_abi = require('./erc20abi.json');
+const erc20_abi = require('../erc20abi.json');
 const weth_abi = [
   'function deposit() public payable',
   'function balanceOf(address acct) public view returns (uint)'

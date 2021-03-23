@@ -5,6 +5,7 @@ const TOKENS = require('../tokenAddress');
 // const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
 // const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 
+const ROPSTEN_PRIVATE_KEY = 'YOUR ROPSTEN PRIVATE KEY';
 const Network = 'RINKEBY';
 const DAI = TOKENS[Network]['DAI'];
 const LINK = TOKENS[Network]['LINK'];
@@ -33,7 +34,7 @@ async function main() {
   await voting.deployed();
   console.log('Voting deployed to:', voting.address);
 }
-const ROPSTEN_PRIVATE_KEY = 'YOUR ROPSTEN PRIVATE KEY';
+
 main()
   .then(() => process.exit(0))
   .catch((error) => {
