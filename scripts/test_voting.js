@@ -98,6 +98,12 @@ async function main() {
   // const test = await Test.attach(testAddress);
   // const test = await Test.deploy();
   // ,
+
+  const addressArray,
+    weightArray = sortAddresses(
+      [LINK_ADDRESS, API3_ADDRESS],
+      ['300000', '700000']
+    );
   const token = await BFIToken.deploy(
     ['500000', '500000'],
     [DAI_ADDRESS, WBTC_ADDRESS]

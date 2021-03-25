@@ -88,12 +88,12 @@ contract BFIToken is ERC20, AccessControl {
     // The amount relative to balance is the % of the total they are selling
     // Times the balance by the number of outstanding tokens, then divide by the incoming tokens
     uint256 eth_amount = 0;
-    for (uint i=0;i<weights.length-1;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+    for (uint i=0;i<_weights.length-1;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 tokenAmount = (totalSupply() * balance) / amount;
       uint256 deadline = now + 10 minutes;
-      uint256 amtfromtoken = tokenToEth(tokenAmount, tokenAddresses[i], deadline);
+      uint256 amtfromtoken = tokenToEth(tokenAmount, _tokenAddresses[i], deadline);
       eth_amount = eth_amount.add(amtfromtoken);
     }
     msg.sender.transfer(eth_amount);
@@ -132,11 +132,11 @@ contract BFIToken is ERC20, AccessControl {
 
   function EthToToken() private {
     uint ethRemaining = msg.value;
-    for (uint i=0;i<weights.length-1;i++) {
-      uint256 ethTokenFraction = (msg.value * weights[i]) / denom;
+    for (uint i=0;i<_weights.length-1;i++) {
+      uint256 ethTokenFraction = (msg.value * _weights[i]) / _denom;
       uint256 deadline = now + 10 minutes;
-      uint256 amountOutMin = getAmountOutEth(tokenAddresses[i],ethTokenFraction);
-      address[] memory path = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[i]);
+      uint256 amountOutMin = getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
+      address[] memory path = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
       uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
         amountOutMin,
         path,
@@ -145,10 +145,10 @@ contract BFIToken is ERC20, AccessControl {
       );
       ethRemaining = ethRemaining.sub(ethTokenFraction);
     }
-    uint256 lastIndex = tokenAddresses.length-1;
+    uint256 lastIndex = _tokenAddresses.length-1;
     uint256 lastDeadline = now + 10 minutes;
-    uint256 lastAmountOutMin = getAmountOutEth(tokenAddresses[lastIndex],ethRemaining);
-    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[lastIndex]);
+    uint256 lastAmountOutMin = getAmountOutEth(_tokenAddresses[lastIndex],ethRemaining);
+    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
     uniswapRouter.swapExactETHForTokens{value: ethRemaining}(
       lastAmountOutMin,
       lastPath,
@@ -263,7 +263,7 @@ contract BFIToken is ERC20, AccessControl {
 
   function valuePortfolio() public view returns(uint256) {
     uint256 portfolio_balance = 0; 
-    for (uint i=0;i<weights.length;i++) {
+    for (uint i=0;i<_weights.length;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 amountOutMin = getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
@@ -284,25 +284,25 @@ contract BFIToken is ERC20, AccessControl {
     address[] memory reductionAddresses;
     uint[] memory accumulations;
     uint[] memory reductions;
-    while (j != addresses_.length && i != _tokenAddressesp.length) {
-      if (_tokenAddressesp[i] == addresses_[j]) {
+    while (j != addresses_.length && i != _tokenAddresses.length) {
+      if (_tokenAddresses[i] == addresses_[j]) {
         ERC20 token = ERC20(_tokenAddresses[i]);
         uint256 balance = token.balanceOf(address(this));
-        price = getPrice(addresses_[i]);
-        newAmount = ((portfolioValue * tokenWeight) / _denom)/ price;
+        price = getPrice(addresses_[j]);
+        newAmount = ((portfolioValue * weights_[j]) / _denom)/ price;
         // same address. record difference
         if (newAmount >= balance) {
           // accum
-          accumAddresses.push(addresses_[i]);
+          accumAddresses.push(addresses_[j]);
           accumulations.push(newAmount - balance);
         } else {
           // reduction
-          reductionAddresses.push(addresses_[i]);
+          reductionAddresses.push(addresses_[j]);
           reductions.push(balance - newAmount);
         }
         i++;
         j++;
-      } else if (_tokenAddressesp[i] < addresses_[j]) {
+      } else if (_tokenAddresses[i] < addresses_[j]) {
         // original address is less increment originals
         ERC20 token = ERC20(_tokenAddresses[i]);
         uint256 balance = token.balanceOf(address(this));
@@ -311,9 +311,9 @@ contract BFIToken is ERC20, AccessControl {
         i++;
       } else {
         // incoming address is less, increment incoming
-        price = getPrice(addresses_[i]);
-        newAmount = ((portfolioValue * tokenWeight) / _denom)/ price;
-        accumAddresses.push(addresses_[i]);
+        price = getPrice(addresses_[j]);
+        newAmount = ((portfolioValue * weights_[j]) / _denom)/ price;
+        accumAddresses.push(addresses_[j]);
         accumulations.push(newAmount);
         j++;
       }
