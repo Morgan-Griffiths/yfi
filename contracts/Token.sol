@@ -13,26 +13,17 @@ contract BFIToken is ERC20, AccessControl {
   event Balance(uint256 balance);
   event Performance(uint EthDeposited, uint PortfolioValue);
   bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');    
-  address[] tokenAddresses;
-  uint[] weights;
-  uint internal constant denom = 1000000;   
+  address[] _tokenAddresses;
+  uint[] _weights;
+  uint internal constant _denom = 1000000;   
   uint256 private _ethDeposited;
-  mapping(address => uint8) portfolioTokens;
-  mapping(address => uint256) oldAmounts;
-  mapping(address => uint256) newAmounts;
-  mapping(address => uint256) reductions;
-  mapping(address => uint256) accumulations;
-  mapping(address => uint) priceMapping;
 
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
 
-  constructor(uint[] memory _weights,address[] memory _addresses) public ERC20('Blob', 'BFI') {
-    setStrategy(_weights, _addresses);
-    for (uint i;i < _addresses.length; i++) {
-      portfolioTokens[_addresses[i]] = 1;
-    }
+  constructor(address[] memory addresses_,uint[] memory weights_) public ERC20('Blob', 'BFI') {
+    setStrategy(addresses_,weights_);
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing
     uniswapFactory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f); // For testing
     _setupRole(MINTER_ROLE, msg.sender);
@@ -47,10 +38,11 @@ contract BFIToken is ERC20, AccessControl {
   }
 
   function getPrice(address token) internal view returns (uint256) {
+    // returns price in WEI
     address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
     (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    return (ethReserves * 1000000) / tokenReserves;
+    return ethReserves / tokenReserves;
   }
 
   function portfolioPerformance() public virtual returns (uint,uint) {
@@ -189,12 +181,13 @@ contract BFIToken is ERC20, AccessControl {
     ERC20 token = ERC20(tokenIn);
     uint256 balance = token.balanceOf(address(this));
     require(amountIn <= balance,'Attempting to withdraw more than current balance');
-    address[] memory path = getPathForSwap(tokenIn,tokenOut);
+    address[] memory path = new address[](2);
+    path[0] = tokenIn;
+    path[1] = tokenOut;
     token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
     uint256 amountOutMin = getAmountOutForTokens(tokenIn,tokenOut,amountIn);
     uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
   }
-
   function tokensForExactTokens(
     uint256 amountOut,
     address tokenIn,
@@ -202,27 +195,63 @@ contract BFIToken is ERC20, AccessControl {
     uint256 deadline
   ) private returns (uint256 amount) {
     ERC20 token = ERC20(tokenIn);
-    address[] memory path = getPathForSwap(tokenIn,tokenOut);
+    address[] memory path = new address[](2);
+    path[0] = tokenIn;
+    path[1] = tokenOut;
     uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
     token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
     uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
   }
 
-  function setAddresses(address[] memory _addresses) public {
-    tokenAddresses = _addresses;
+  function exactTokensForTokensDirect(
+    uint256 amountIn,
+    address tokenIn,
+    address tokenOut,
+    uint256 deadline
+  ) private returns (uint256 amount) {
+    ERC20 token = ERC20(tokenIn);
+    uint256 balance = token.balanceOf(address(this));
+    require(amountIn <= balance,'Attempting to withdraw more than current balance');
+    address[] memory path = new address[](3);
+    path[0] = tokenIn;
+    path[1] = uniswapRouter.WETH();
+    path[2] = tokenOut;
+    token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
+    uint256 amountOutMin = getAmountOutForTokens(tokenIn,tokenOut,amountIn);
+    uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
+  }
+
+  function tokensForExactTokensDirect(
+    uint256 amountOut,
+    address tokenIn,
+    address tokenOut,
+    uint256 deadline
+  ) private returns (uint256 amount) {
+    ERC20 token = ERC20(tokenIn);
+    address[] memory path = new address[](3);
+    path[0] = tokenIn;
+    path[1] = uniswapRouter.WETH();
+    path[2] = tokenOut;
+    uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
+    token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
+    uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
+  }
+
+  function setAddresses(address[] memory addresses_) public {
+    _tokenAddresses = addresses_;
   }
   function readAddresses() external view returns(address[] memory) {
-    return tokenAddresses;
+    return _tokenAddresses;
   }
-  function setWeights(uint[] memory _weights) public {
-    weights = _weights;
+  function setWeights(uint[] memory weights_) public {
+    _weights = weights_;
   }
   function readWeights() external view returns(uint[] memory) {
-    return weights;
+    return _weights;
   }
-  function setStrategy(uint[] memory _weights,address[] memory _addresses) internal {  
-    tokenAddresses = _addresses;
-    weights = _weights;
+  function setStrategy(address[] memory addresses_,uint[] memory weights_) internal {  
+    _tokenAddresses = addresses_;
+    _weights = weights_;
   }
 
   function getPathForSwap(address tokenIn,address tokenOut) private pure returns (address[] memory) {
@@ -235,129 +264,145 @@ contract BFIToken is ERC20, AccessControl {
   function valuePortfolio() public view returns(uint256) {
     uint256 portfolio_balance = 0; 
     for (uint i=0;i<weights.length;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
-      uint256 amountOutMin = getAmountOutForTokens(tokenAddresses[i],uniswapRouter.WETH(),balance);
+      uint256 amountOutMin = getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
       portfolio_balance = portfolio_balance.add(amountOutMin);
     }
     return portfolio_balance;
   }
 
-  function getMigrationVariables(uint[] memory _weights,address[] memory _addresses) internal returns(uint,address[] storage,address[] storage) {
+  function simpleMigrate(address[] memory addresses_,uint[] memory weights_) external whitelisted {
     uint portfolioValue = valuePortfolio();
     uint256 price;
-    address addr;
-    for (uint i; i < tokenAddresses.length;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
-      uint256 balance = token.balanceOf(address(this));
-      price = getPrice(tokenAddresses[i]);
-      priceMapping[tokenAddresses[i]] = price;
-      oldAmounts[tokenAddresses[i]] = price * balance;
-    }
-    for (uint i; i < _addresses.length;i++) {
-      ERC20 token = ERC20(_addresses[i]);
-      uint tokenWeight = _weights[i];
-      price = getPrice(_addresses[i]);
-      priceMapping[_addresses[i]] = price;
-      newAmounts[_addresses[i]] = ((portfolioValue * tokenWeight) / denom)/ price;
-    }
-    address[] memory reductionAddrs;
-    address[] memory accumulationAddrs;
-    for (uint i; i < tokenAddresses.length;i++) {
-      addr = tokenAddresses[i];
-      if (oldAmounts[addr] > newAmounts[addr]) {
-        reductions[addr] = oldAmounts[addr]-newAmounts[addr];
-        reductionAddrs.push(addr);
-      }
-    }
-    for (uint i; i < _addresses.length;i++) {
-      addr = _addresses[i];
-      if (reductions[addr] != 0) {
-        accumulations[addr] = _weights[i];
-        accumulationAddrs.push(addr);
-      }
-    }
-    return (portfolioValue,reductionAddrs,accumulationAddrs);
-  }
-
-  function smartMigrate(uint[] memory _weights,address[] memory _addresses) external whitelisted {
-    uint portfolioValue;
-    address[] memory reductionAddresses;
-    address[] memory accumulationAddresses;
-    (portfolioValue,reductionAddresses,accumulationAddresses) = getMigrationVariables(_weights,_addresses);
-    // move the underlying
-    uint eth;
-    uint balanceIn;
-    uint balanceOut;
-    uint buyAmount;
-    uint sellAmount;
-    uint buy_index = 0;
-    uint sell_index = 0;
-    uint buy_amount_needed;
-    uint sell_amount_needed;
+    uint256 newAmount;
     address sell_addr;
     address buy_addr;
-    while (true) {
-      sell_addr = reductionAddresses[sell_index];
-      sellAmount = reductions[sell_addr];
-      buy_addr = accumulationAddresses[buy_index];
-      buyAmount = accumulations[buy_addr];
-      ERC20 tokenIn = ERC20(sell_addr);
-      ERC20 tokenOut = ERC20(buy_addr);
-      balanceIn = tokenIn.balanceOf(address(this));
-      uint256 deadline = now + 10 minutes;
-      // see how much of token A will fund token B's purchase
-      buy_amount_needed = buyAmount*priceMapping[buy_addr];
-      sell_amount_needed = buy_amount_needed / priceMapping[sell_addr];
-      if ((buy_index != accumulationAddresses.length-1) && (sell_index != reductionAddresses.length-1)) {
-          if (sell_amount_needed > sellAmount) {
-              // sell all and increment sells
-              exactTokensForTokens(balanceIn, sell_addr, buy_addr, deadline);
-              balanceOut = tokenOut.balanceOf(address(this));
-              reductions[sell_addr] = 0;
-              accumulations[buy_addr] -= balanceOut;
-              sell_index += 1;
-          } else if (sell_amount_needed < sellAmount) {
-              // sell partial and increment buys
-              tokensForExactTokens(sell_amount_needed, sell_addr, buy_addr, deadline);
-              (sell_addr,buy_addr,balanceIn);
-              accumulations[buy_addr] = 0;
-              buy_index += 1;
-          } else {
-              // sell all and increment both
-              exactTokensForTokens(balanceIn, sell_addr, buy_addr, deadline);
-              accumulations[buy_addr] = 0;
-              reductions[sell_addr] = 0;
-              buy_index += 1;
-              sell_index += 1;
-          }
+    uint i=0;
+    uint j=0;
+    address[] memory accumAddresses;
+    address[] memory reductionAddresses;
+    uint[] memory accumulations;
+    uint[] memory reductions;
+    while (j != addresses_.length && i != _tokenAddressesp.length) {
+      if (_tokenAddressesp[i] == addresses_[j]) {
+        ERC20 token = ERC20(_tokenAddresses[i]);
+        uint256 balance = token.balanceOf(address(this));
+        price = getPrice(addresses_[i]);
+        newAmount = ((portfolioValue * tokenWeight) / _denom)/ price;
+        // same address. record difference
+        if (newAmount >= balance) {
+          // accum
+          accumAddresses.push(addresses_[i]);
+          accumulations.push(newAmount - balance);
+        } else {
+          // reduction
+          reductionAddresses.push(addresses_[i]);
+          reductions.push(balance - newAmount);
+        }
+        i++;
+        j++;
+      } else if (_tokenAddressesp[i] < addresses_[j]) {
+        // original address is less increment originals
+        ERC20 token = ERC20(_tokenAddresses[i]);
+        uint256 balance = token.balanceOf(address(this));
+        reductionAddresses.push(_tokenAddresses[i]);
+        reductions.push(balance);
+        i++;
       } else {
-          // Special case for last entry. sell everything and buy whatever remains.
-          exactTokensForTokens(balanceIn, sell_addr, buy_addr, deadline);
-          accumulations[buy_addr] = 0;
-          reductions[sell_addr] = 0;
-          break;
+        // incoming address is less, increment incoming
+        price = getPrice(addresses_[i]);
+        newAmount = ((portfolioValue * tokenWeight) / _denom)/ price;
+        accumAddresses.push(addresses_[i]);
+        accumulations.push(newAmount);
+        j++;
       }
     }
+    // sell all reductions
+    uint256 deadline = now + 10 minutes;
+    for (i = 0; i < reductionAddresses.length;i++) {
+      exactTokensForTokens(reductions[i], _tokenAddresses[i], uniswapRouter.WETH(), deadline);
+    }
+    for (i = 0; i < addresses_.length;i++) {
+      tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),addresses_[i], deadline);
+    }
   }
-  
-  function migratePortfolio(uint[] memory _weights,address[] memory _addresses) external whitelisted {
+
+  // function complexMigrate(uint[] memory weights_,address[] memory addresses_) external whitelisted {
+  //   uint portfolioValue = valuePortfolio();
+  //   mapping(address => uint256) existingAmounts;
+  //   mapping(address => uint256) desiredAmounts;
+  //   mapping(address => uint) priceMapping;
+  //   uint256 deadline = now + 10 minutes;
+  //   uint256 price;
+  //   address sell_addr;
+  //   address buy_addr;
+  //   uint i;
+  //   for (i = 0; i < _tokenAddresses.length;i++) {
+  //     ERC20 token = ERC20(_tokenAddresses[i]);
+  //     uint256 balance = token.balanceOf(address(this));
+  //     existingAmounts[_tokenAddresses[i]] = balance;
+  //   }
+  //   for (i = 0; i < _addresses.length;i++) {
+  //     ERC20 token = ERC20(_addresses[i]);
+  //     uint tokenWeight = weights_[i];
+  //     price = getPrice(_addresses[i]);
+  //     priceMapping[_addresses[i]] = price;
+  //     desiredAmounts[_addresses[i]] = ((portfolioValue * tokenWeight) / denom)/ price;
+  //   }
+  //   uint[] buyAmounts = new uint[](_addresses.length);
+  //   for (i = 0; i < _addresses.length;i++) {
+  //     buy_addr = _addresses[i];
+  //     if (desiredAmounts[buy_addr] > existingAmounts[buy_addr]) {
+  //       buyAmounts[i] = desiredAmounts[buy_addr]-existingAmounts[buy_addr];
+  //     }
+  //   }
+  //   uint maxBuy;
+  //   int sellAmount;
+  //   uint balanceOut;
+  //   for (i = 0; i < _tokenAddresses.length;i++) {
+  //     sell_addr = _tokenAddresses[i];
+  //     if (existingAmounts[sell_addr] > desiredAmounts[sell_addr]) {
+  //       sellAmount = existingAmounts[sell_addr]-desiredAmounts[sell_addr];
+  //       uint j = 0;
+  //       while (sellAmount > 0 && j < _addresses.length) {
+  //         buy_addr = _addresses[j];
+  //         //TODO check paths and find best one
+  //         maxBuy = getAmountOutForTokens(sell_addr, buy_addr, sellAmount);
+  //         if (buyAmounts[j] >= maxBuy) {
+  //           // sell all, buy might be partially unfilled
+  //           exactTokensForTokens(sellAmount, sell_addr, buy_addr, deadline);
+  //           balanceOut = buy_addr.balanceOf(address(this));
+  //           buyAmounts[j] -= balanceOut;
+  //           break;
+  //         }
+  //         // sell partial, buy filled
+  //         tokensForExactTokens(buyAmounts[j], sell_addr, buy_addr, deadline);
+  //         buyAmounts[j] = 0;
+  //         sellAmount = sell_addr.balanceOf(address(this)) - desiredAmounts[sell_addr];
+  //         j++;
+  //       }
+  //     }
+  //   }
+  // }
+
+  function migratePortfolio(address[] memory addresses_,uint[] memory weights_) external whitelisted {
     // basic functionality -> sell everything, reinvest everything
     uint256 eth_amount = 0;
-    for (uint i=0;i<tokenAddresses.length;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+    for (uint i=0;i<_tokenAddresses.length;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 deadline = now + 10 minutes;
-      uint256 amtfromtoken = tokenToEth(balance, tokenAddresses[i], deadline);
+      uint256 amtfromtoken = tokenToEth(balance, _tokenAddresses[i], deadline);
       eth_amount = eth_amount.add(amtfromtoken);
     }
     // reinvest
-    setStrategy(_weights,_addresses);
-    for (uint i=0;i<weights.length-1;i++) {
-      uint256 ethTokenFraction = (eth_amount * weights[i]) / denom;
+    setStrategy(addresses_,weights_);
+    for (uint i=0;i<_weights.length-1;i++) {
+      uint256 ethTokenFraction = (eth_amount * _weights[i]) / _denom;
       uint256 deadline = now + 10 minutes;
-      uint256 amountOutMin = getAmountOutEth(tokenAddresses[i],ethTokenFraction);
-      address[] memory path = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[i]);
+      uint256 amountOutMin = getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
+      address[] memory path = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
       uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
         amountOutMin,
         path,
@@ -366,10 +411,10 @@ contract BFIToken is ERC20, AccessControl {
       );
       eth_amount = eth_amount.sub(ethTokenFraction);
     }
-    uint256 lastIndex = tokenAddresses.length-1;
+    uint256 lastIndex = _tokenAddresses.length-1;
     uint256 lastDeadline = now + 10 minutes;
-    uint256 lastAmountOutMin = getAmountOutEth(tokenAddresses[lastIndex],eth_amount);
-    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[lastIndex]);
+    uint256 lastAmountOutMin = getAmountOutEth(_tokenAddresses[lastIndex],eth_amount);
+    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
     uniswapRouter.swapExactETHForTokens{value: eth_amount}(
       lastAmountOutMin,
       lastPath,
@@ -405,8 +450,8 @@ contract BFIToken is ERC20, AccessControl {
   }
   function withdrawRaw() external {
     uint256 senderBalance = balanceOf(msg.sender);
-    for (uint i=0;i<tokenAddresses.length;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+    for (uint i=0;i<_tokenAddresses.length;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 tokenShare = (balance * senderBalance) / totalSupply();
       token.transfer(msg.sender,tokenShare);

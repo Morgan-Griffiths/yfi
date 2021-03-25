@@ -38,12 +38,13 @@ async function vote_and_migrate() {
     [owner.address, addr1.address],
     token.address
   );
+  const addressArray,
+    weightArray = sortAddresses(
+      [LINK_ADDRESS, API3_ADDRESS],
+      ['300000', '700000']
+    );
   await token.whitelistAddress(votingContract.address);
-  await votingContract.addProposal(
-    'Hippo',
-    [LINK_ADDRESS, API3_ADDRESS],
-    ['300000', '700000']
-  );
+  await votingContract.addProposal('Hippo', addressArray, weightArray);
   let voted = await votingContract.vote(1);
   log_outputs(await voted.wait());
   const votingContract2 = new ethers.Contract(

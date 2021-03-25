@@ -1,5 +1,6 @@
 // scripts/index.js
 
+import { sortAddresses } from '../utils';
 const { BigNumber } = require('ethers');
 
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';

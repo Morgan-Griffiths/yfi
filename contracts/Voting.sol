@@ -109,6 +109,6 @@ contract Voting {
     Proposal memory winningProposal = proposalLookup[winnerId];
     uint[] memory _weight = winningProposal.weights;
     address[] memory _tokenAddresses = winningProposal.tokenAddresses;
-    token.migratePortfolio(_weight,_tokenAddresses);
+    token.migratePortfolio(_tokenAddresses,_weight);
   }
 }
