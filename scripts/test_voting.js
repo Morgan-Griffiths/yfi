@@ -6,6 +6,7 @@ const erc20_abi = require('../erc20abi.json');
 const token_abi = require('../token_abi.json');
 const voting_abi = require('../voting_abi.json');
 var fs = require('fs');
+const { sortAddresses } = require('../utils');
 
 const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
@@ -38,11 +39,12 @@ async function vote_and_migrate() {
     [owner.address, addr1.address],
     token.address
   );
-  const addressArray,
-    weightArray = sortAddresses(
-      [LINK_ADDRESS, API3_ADDRESS],
-      ['300000', '700000']
-    );
+  const { addressArray, weightArray } = sortAddresses(
+    [LINK_ADDRESS, API3_ADDRESS],
+    ['300000', '700000']
+  );
+  console.log('addressArray', addressArray);
+  console.log('weightArray', weightArray);
   await token.whitelistAddress(votingContract.address);
   await votingContract.addProposal('Hippo', addressArray, weightArray);
   let voted = await votingContract.vote(1);
@@ -98,22 +100,17 @@ async function main() {
   // const test = await Test.attach(testAddress);
   // const test = await Test.deploy();
   // ,
-
-  const addressArray,
-    weightArray = sortAddresses(
-      [LINK_ADDRESS, API3_ADDRESS],
-      ['300000', '700000']
-    );
-  const token = await BFIToken.deploy(
-    ['500000', '500000'],
-    [DAI_ADDRESS, WBTC_ADDRESS]
+  const { addresses, weights } = sortAddresses(
+    [DAI_ADDRESS, WBTC_ADDRESS],
+    ['500000', '500000']
   );
+  const token = await BFIToken.deploy(addresses, weights);
   let value = BigNumber.from(10).pow(18);
   let gasPrice = BigNumber.from(10).pow(4);
   let gasLimit = BigNumber.from(10).pow(6);
   let result = await token.deposit({ value, gasPrice, gasLimit });
   let data = await result.wait();
-  log_outputs(data);
+  // log_outputs(data);
   dai_balance = await dai.balanceOf(token.address);
   console.log('DAI Balance', parseInt(dai_balance._hex, 16));
   wbtc_balance = await wbtc.balanceOf(token.address);
@@ -122,8 +119,8 @@ async function main() {
   console.log('Link Balance', parseInt(link_balance._hex, 16));
   api3_balance = await api3.balanceOf(token.address);
   console.log('Api3 Balance', parseInt(api3_balance._hex, 16));
-  pathResult = await token.pathCheck(DAI_ADDRESS, dai_balance, API3_ADDRESS);
-  log_outputs('pathResult', pathResult);
+  // pathResult = await token.pathCheck(DAI_ADDRESS, dai_balance, API3_ADDRESS);
+  // log_outputs('pathResult', pathResult);
   // TEST TOKEN DIRECT DEPOSIT
   // let amount = await buy_token(owner);
   // console.log('amount', amount.toString());
@@ -133,17 +130,17 @@ async function main() {
   // console.log(await token.balanceOf(owner.address));
 
   // TEST MIGRATION
-  vote_and_migrate();
+  // vote_and_migrate();
 
-  console.log('Token Balance', await token.balanceOf(owner.address));
-  dai_balance = await dai.balanceOf(token.address);
-  console.log('DAI Balance', parseInt(dai_balance._hex, 16));
-  wbtc_balance = await wbtc.balanceOf(token.address);
-  console.log('WBTC Balance', parseInt(wbtc_balance._hex, 16));
-  link_balance = await link.balanceOf(token.address);
-  console.log('Link Balance', parseInt(link_balance._hex, 16));
-  api3_balance = await api3.balanceOf(token.address);
-  console.log('Api3 Balance', parseInt(api3_balance._hex, 16));
+  // console.log('Token Balance', await token.balanceOf(owner.address));
+  // dai_balance = await dai.balanceOf(token.address);
+  // console.log('DAI Balance', parseInt(dai_balance._hex, 16));
+  // wbtc_balance = await wbtc.balanceOf(token.address);
+  // console.log('WBTC Balance', parseInt(wbtc_balance._hex, 16));
+  // link_balance = await link.balanceOf(token.address);
+  // console.log('Link Balance', parseInt(link_balance._hex, 16));
+  // api3_balance = await api3.balanceOf(token.address);
+  // console.log('Api3 Balance', parseInt(api3_balance._hex, 16));
   // await votingContract.AddAddress(DAI_ADDRESS);
   // await token.AddAddress(WBTC_ADDRESS);
   // console.log(await result.wait());

@@ -39,7 +39,7 @@ contract Voting {
     // Construct all voters 
     numVoters = whitelistedAddresses.length;
     for (uint i=0;i<whitelistedAddresses.length;i++) {
-      voterLookup[whitelistedAddresses[i]] = Voter(1,false,0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,0,0);
+      voterLookup[whitelistedAddresses[i]] = Voter(1,false,address(0),0,0);
     }
   }
   receive() external payable {}
@@ -64,7 +64,7 @@ contract Voting {
   function addVoters(address[] memory _addresses) external {
     require(msg.sender == chairperson,'Only chairperson can add addresses');
     for (uint i=0;i<_addresses.length;i++) {
-      voterLookup[_addresses[i]] = Voter(1,false,0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,0,0);
+      voterLookup[_addresses[i]] = Voter(1,false,address(0),0,0);
     }
   }
   function delegate(address to) public {
@@ -107,8 +107,8 @@ contract Voting {
     require(totalVotes > (numVoters / 2),'Not enough votes');
     (uint winnerId,uint maxVotes) = getWinner();
     Proposal memory winningProposal = proposalLookup[winnerId];
-    uint[] memory _weight = winningProposal.weights;
+    uint[] memory _weights = winningProposal.weights;
     address[] memory _tokenAddresses = winningProposal.tokenAddresses;
-    token.migratePortfolio(_tokenAddresses,_weight);
+    token.simpleMigrate(_tokenAddresses,_weights);
   }
 }

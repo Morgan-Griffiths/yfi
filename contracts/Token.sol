@@ -11,6 +11,7 @@ import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
 contract BFIToken is ERC20, AccessControl {
   event Variable(uint256 amount);
   event Balance(uint256 balance);
+  event Address(address tokenAddress);
   event Performance(uint EthDeposited, uint PortfolioValue);
   bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');    
   address[] _tokenAddresses;
@@ -280,10 +281,11 @@ contract BFIToken is ERC20, AccessControl {
     address buy_addr;
     uint i=0;
     uint j=0;
-    address[] memory accumAddresses;
-    address[] memory reductionAddresses;
-    uint[] memory accumulations;
-    uint[] memory reductions;
+    address[] memory accumAddresses = new address[](addresses_.length);
+    address[] memory reductionAddresses = new address[](_tokenAddresses.length);
+    uint[] memory accumulations = new uint[](addresses_.length);
+    uint[] memory reductions = new uint[](_tokenAddresses.length);
+    // only increment when the amount is depleted.
     while (j != addresses_.length && i != _tokenAddresses.length) {
       if (_tokenAddresses[i] == addresses_[j]) {
         ERC20 token = ERC20(_tokenAddresses[i]);
@@ -293,12 +295,12 @@ contract BFIToken is ERC20, AccessControl {
         // same address. record difference
         if (newAmount >= balance) {
           // accum
-          accumAddresses.push(addresses_[j]);
-          accumulations.push(newAmount - balance);
+          accumAddresses[j] = addresses_[j];
+          accumulations[j] = newAmount - balance;
         } else {
           // reduction
-          reductionAddresses.push(addresses_[j]);
-          reductions.push(balance - newAmount);
+          reductionAddresses[j] = addresses_[j];
+          reductions[j] = balance - newAmount;
         }
         i++;
         j++;
@@ -306,123 +308,42 @@ contract BFIToken is ERC20, AccessControl {
         // original address is less increment originals
         ERC20 token = ERC20(_tokenAddresses[i]);
         uint256 balance = token.balanceOf(address(this));
-        reductionAddresses.push(_tokenAddresses[i]);
-        reductions.push(balance);
+        reductionAddresses[i] = _tokenAddresses[i];
+        reductions[i] = balance;
         i++;
       } else {
         // incoming address is less, increment incoming
         price = getPrice(addresses_[j]);
         newAmount = ((portfolioValue * weights_[j]) / _denom)/ price;
-        accumAddresses.push(addresses_[j]);
-        accumulations.push(newAmount);
+        accumAddresses[j] = addresses_[j];
+        accumulations[j] = newAmount;
         j++;
       }
     }
+    // emit Address(reductionAddresses[0]);
+    // emit Address(reductionAddresses[1]);
+    // emit Address(accumAddresses[0]);
+    // emit Address(accumAddresses[1]);
+    // emit Variable(reductions[0]);
+    // emit Variable(reductions[1]);
+    // emit Variable(accumulations[0]);
+    // emit Variable(accumulations[1]);
     // sell all reductions
-    uint256 deadline = now + 10 minutes;
-    for (i = 0; i < reductionAddresses.length;i++) {
-      exactTokensForTokens(reductions[i], _tokenAddresses[i], uniswapRouter.WETH(), deadline);
-    }
-    for (i = 0; i < addresses_.length;i++) {
-      tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),addresses_[i], deadline);
-    }
+    // uint256 deadline = now + 10 minutes;
+    // for (i = 0; i < reductionAddresses.length;i++) {
+    //   if (reductionAddresses[i] == address(0)) {
+    //     break;
+    //   }
+    //   exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
+    // }
+    // for (i = 0; i < accumAddresses.length;i++) {
+    //   if (accumAddresses[i] == address(0)) {
+    //     break;
+    //   }
+    //   tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
+    // }
+    // setStrategy(addresses_, weights_);
   }
-
-  // function complexMigrate(uint[] memory weights_,address[] memory addresses_) external whitelisted {
-  //   uint portfolioValue = valuePortfolio();
-  //   mapping(address => uint256) existingAmounts;
-  //   mapping(address => uint256) desiredAmounts;
-  //   mapping(address => uint) priceMapping;
-  //   uint256 deadline = now + 10 minutes;
-  //   uint256 price;
-  //   address sell_addr;
-  //   address buy_addr;
-  //   uint i;
-  //   for (i = 0; i < _tokenAddresses.length;i++) {
-  //     ERC20 token = ERC20(_tokenAddresses[i]);
-  //     uint256 balance = token.balanceOf(address(this));
-  //     existingAmounts[_tokenAddresses[i]] = balance;
-  //   }
-  //   for (i = 0; i < _addresses.length;i++) {
-  //     ERC20 token = ERC20(_addresses[i]);
-  //     uint tokenWeight = weights_[i];
-  //     price = getPrice(_addresses[i]);
-  //     priceMapping[_addresses[i]] = price;
-  //     desiredAmounts[_addresses[i]] = ((portfolioValue * tokenWeight) / denom)/ price;
-  //   }
-  //   uint[] buyAmounts = new uint[](_addresses.length);
-  //   for (i = 0; i < _addresses.length;i++) {
-  //     buy_addr = _addresses[i];
-  //     if (desiredAmounts[buy_addr] > existingAmounts[buy_addr]) {
-  //       buyAmounts[i] = desiredAmounts[buy_addr]-existingAmounts[buy_addr];
-  //     }
-  //   }
-  //   uint maxBuy;
-  //   int sellAmount;
-  //   uint balanceOut;
-  //   for (i = 0; i < _tokenAddresses.length;i++) {
-  //     sell_addr = _tokenAddresses[i];
-  //     if (existingAmounts[sell_addr] > desiredAmounts[sell_addr]) {
-  //       sellAmount = existingAmounts[sell_addr]-desiredAmounts[sell_addr];
-  //       uint j = 0;
-  //       while (sellAmount > 0 && j < _addresses.length) {
-  //         buy_addr = _addresses[j];
-  //         //TODO check paths and find best one
-  //         maxBuy = getAmountOutForTokens(sell_addr, buy_addr, sellAmount);
-  //         if (buyAmounts[j] >= maxBuy) {
-  //           // sell all, buy might be partially unfilled
-  //           exactTokensForTokens(sellAmount, sell_addr, buy_addr, deadline);
-  //           balanceOut = buy_addr.balanceOf(address(this));
-  //           buyAmounts[j] -= balanceOut;
-  //           break;
-  //         }
-  //         // sell partial, buy filled
-  //         tokensForExactTokens(buyAmounts[j], sell_addr, buy_addr, deadline);
-  //         buyAmounts[j] = 0;
-  //         sellAmount = sell_addr.balanceOf(address(this)) - desiredAmounts[sell_addr];
-  //         j++;
-  //       }
-  //     }
-  //   }
-  // }
-
-  function migratePortfolio(address[] memory addresses_,uint[] memory weights_) external whitelisted {
-    // basic functionality -> sell everything, reinvest everything
-    uint256 eth_amount = 0;
-    for (uint i=0;i<_tokenAddresses.length;i++) {
-      ERC20 token = ERC20(_tokenAddresses[i]);
-      uint256 balance = token.balanceOf(address(this));
-      uint256 deadline = now + 10 minutes;
-      uint256 amtfromtoken = tokenToEth(balance, _tokenAddresses[i], deadline);
-      eth_amount = eth_amount.add(amtfromtoken);
-    }
-    // reinvest
-    setStrategy(addresses_,weights_);
-    for (uint i=0;i<_weights.length-1;i++) {
-      uint256 ethTokenFraction = (eth_amount * _weights[i]) / _denom;
-      uint256 deadline = now + 10 minutes;
-      uint256 amountOutMin = getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
-      address[] memory path = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
-      uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
-        amountOutMin,
-        path,
-        address(this),
-        deadline
-      );
-      eth_amount = eth_amount.sub(ethTokenFraction);
-    }
-    uint256 lastIndex = _tokenAddresses.length-1;
-    uint256 lastDeadline = now + 10 minutes;
-    uint256 lastAmountOutMin = getAmountOutEth(_tokenAddresses[lastIndex],eth_amount);
-    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
-    uniswapRouter.swapExactETHForTokens{value: eth_amount}(
-      lastAmountOutMin,
-      lastPath,
-      address(this),
-      lastDeadline
-    );
-  }
-
   function pathCheck(address tokenFrom,uint amount,address tokenTo) external {
     // check direct and then check via weth
     uint firstAmount = getAmountOutForTokens(tokenFrom,tokenTo,amount);

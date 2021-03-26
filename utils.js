@@ -1,4 +1,4 @@
-export function sortAddresses(addresses, weights) {
+function sortAddresses(addresses, weights) {
   //1) combine the arrays:
   var list = [];
   for (var j = 0; j < addresses.length; j++)
@@ -14,5 +14,7 @@ export function sortAddresses(addresses, weights) {
     addresses[k] = list[k].address;
     weights[k] = list[k].weight;
   }
-  return addresses, weights;
+  return { addresses, weights };
 }
+
+module.exports = { sortAddresses };
