@@ -67,7 +67,7 @@ async function buy_token(owner) {
   const deadline = Math.floor(Number(new Date()) / 1000) + 300;
   const router = new ethers.Contract(UNISWAP_ROUTER_ADDRESS, router_abi, owner);
   let gasPrice = BigNumber.from(10).pow(3);
-  let gasLimit = BigNumber.from(10).pow(7);
+  let gasLimit = BigNumber.from(10).pow(6);
   let value = BigNumber.from(10).pow(18);
   let result = await router.swapExactETHForTokens(
     0,
