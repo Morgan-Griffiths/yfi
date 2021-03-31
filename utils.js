@@ -3,8 +3,7 @@ function sortAddresses(addresses, weights) {
   var list = [];
   for (var j = 0; j < addresses.length; j++)
     list.push({ address: addresses[j], weight: weights[j] });
-
-  //2) sort:
+  // 2) sort:
   list.sort(function (a, b) {
     return a.address < b.address ? -1 : a.address == b.address ? 0 : 1;
   });

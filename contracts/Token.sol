@@ -6,12 +6,14 @@ import '@openzeppelin/contracts/access/AccessControl.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
+import './ILibrary.sol';
 
 
 contract BFIToken is ERC20, AccessControl {
   event Variable(uint256 amount);
   event Balance(uint256 balance);
-  event Address(address tokenAddress);
+  event TokenAddress(address indexed tokenAddress);
+  event Bool(bool falsy);
   event Performance(uint EthDeposited, uint PortfolioValue);
   bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');    
   address[] _tokenAddresses;
@@ -22,28 +24,26 @@ contract BFIToken is ERC20, AccessControl {
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
+  // TokenLibrary public tokenlib;
 
   constructor(address[] memory addresses_,uint[] memory weights_) public ERC20('Blob', 'BFI') {
     setStrategy(addresses_,weights_);
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing
     uniswapFactory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f); // For testing
+    // tokenlib = TokenLibrary(libraryAddress);
     _setupRole(MINTER_ROLE, msg.sender);
   }
 
+  modifier whitelisted() {
+    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
+    _;
+  }
   receive() external payable {}
 
   function whitelistAddress(address recipient) public {
     require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a boss');
     require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a boss');
     _setupRole(MINTER_ROLE, recipient);
-  }
-
-  function getPrice(address token) internal view returns (uint256) {
-    // returns price in WEI
-    address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    return ethReserves / tokenReserves;
   }
 
   function portfolioPerformance() public virtual returns (uint,uint) {
@@ -102,6 +102,14 @@ contract BFIToken is ERC20, AccessControl {
     withdrawEth(eth_amount);
   }
 
+  function getPrice(address token) internal view returns (uint256) {
+    // returns price in WEI
+    address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
+    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
+    (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
+    return (ethReserves * 1000000) / tokenReserves;
+  }
+
   function getAmountInForTokens(address tokenIn,address tokenOut,uint amount) internal view returns(uint256) {
     address pair = uniswapFactory.getPair(tokenIn, tokenOut);
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
@@ -112,11 +120,13 @@ contract BFIToken is ERC20, AccessControl {
   function getAmountOutForTokens(address tokenIn,address tokenOut,uint amountIn) internal view returns(uint256) {
     address pair = uniswapFactory.getPair(tokenIn, tokenOut);
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    // (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    uint amountOut = uniswapRouter.getAmountOut(amountIn,left,right);
+    (uint tokenReserves, uint ethReserves) = (tokenIn < tokenOut) ? (left, right) : (right, left);
+    // uint amountOut = uniswapRouter.getAmountOut(amountIn,left,right);
+    uint amountOut = uniswapRouter.getAmountOut(amountIn,tokenReserves,ethReserves);
     return amountOut;
   }
   function getAmountOut(address tokenAddress,uint amountIn) internal view returns(uint256) {
+    // Token to eth
     address pair = uniswapFactory.getPair(tokenAddress, uniswapRouter.WETH());
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
     (uint tokenReserves, uint ethReserves) = (tokenAddress < uniswapRouter.WETH()) ? (left, right) : (right, left);
@@ -124,6 +134,7 @@ contract BFIToken is ERC20, AccessControl {
     return amountOut;
   }
   function getAmountOutEth(address tokenAddress,uint amountIn) internal view returns(uint256) {
+    // Eth to token
     address pair = uniswapFactory.getPair(tokenAddress, uniswapRouter.WETH());
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
     (uint tokenReserves, uint ethReserves) = (tokenAddress < uniswapRouter.WETH()) ? (left, right) : (right, left);
@@ -178,30 +189,32 @@ contract BFIToken is ERC20, AccessControl {
     address tokenIn,
     address tokenOut,
     uint256 deadline
-  ) private returns (uint256 amount) {
+  ) private returns(uint) {
     ERC20 token = ERC20(tokenIn);
     uint256 balance = token.balanceOf(address(this));
     require(amountIn <= balance,'Attempting to withdraw more than current balance');
     address[] memory path = new address[](2);
     path[0] = tokenIn;
     path[1] = tokenOut;
+    uint256 amountOutMin = getAmountOutForTokens(tokenIn, tokenOut, amountIn);
     token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
-    uint256 amountOutMin = getAmountOutForTokens(tokenIn,tokenOut,amountIn);
-    uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
+    uint256[] memory trade = uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
+    return trade[1];
   }
   function tokensForExactTokens(
     uint256 amountOut,
     address tokenIn,
     address tokenOut,
     uint256 deadline
-  ) private returns (uint256 amount) {
+  ) private returns(uint) {
     ERC20 token = ERC20(tokenIn);
     address[] memory path = new address[](2);
     path[0] = tokenIn;
     path[1] = tokenOut;
     uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
     token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
-    uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
+    uint256[] memory trade = uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
+    return trade[1];
   }
 
   function exactTokensForTokensDirect(
@@ -275,23 +288,34 @@ contract BFIToken is ERC20, AccessControl {
 
   function simpleMigrate(address[] memory addresses_,uint[] memory weights_) external whitelisted {
     uint portfolioValue = valuePortfolio();
-    uint256 price;
+    // (address[] memory accumAddresses,address[] memory reductionAddresses,uint[] memory reductions,uint[] memory accumulations) = tokenlib.getMigration(_tokenAddresses,addresses_,weights_,portfolioValue);
     uint256 newAmount;
-    address sell_addr;
-    address buy_addr;
     uint i=0;
     uint j=0;
+    uint256 balance;
     address[] memory accumAddresses = new address[](addresses_.length);
     address[] memory reductionAddresses = new address[](_tokenAddresses.length);
     uint[] memory accumulations = new uint[](addresses_.length);
     uint[] memory reductions = new uint[](_tokenAddresses.length);
-    // only increment when the amount is depleted.
-    while (j != addresses_.length && i != _tokenAddresses.length) {
-      if (_tokenAddresses[i] == addresses_[j]) {
+    while (j < addresses_.length || i < _tokenAddresses.length) {
+      if (i == _tokenAddresses.length || _tokenAddresses[i] < addresses_[j]) {
+        // increment j
+        newAmount = ((portfolioValue * weights_[j]) / _denom) / getPrice(addresses_[j]);
+        accumAddresses[j] = addresses_[j];
+        accumulations[j] = newAmount;
+        j++;
+      } else if (j == addresses_.length || _tokenAddresses[i] > addresses_[j]) {
+        // increment i
         ERC20 token = ERC20(_tokenAddresses[i]);
-        uint256 balance = token.balanceOf(address(this));
-        price = getPrice(addresses_[j]);
-        newAmount = ((portfolioValue * weights_[j]) / _denom)/ price;
+        balance = token.balanceOf(address(this));
+        reductionAddresses[i] = _tokenAddresses[i];
+        reductions[i] = balance;
+        i++;
+      } else {
+        // equal
+        ERC20 token = ERC20(_tokenAddresses[i]);
+        balance = token.balanceOf(address(this));
+        newAmount = ((portfolioValue * weights_[j]) / _denom)/ getPrice(addresses_[j]);
         // same address. record difference
         if (newAmount >= balance) {
           // accum
@@ -304,56 +328,28 @@ contract BFIToken is ERC20, AccessControl {
         }
         i++;
         j++;
-      } else if (_tokenAddresses[i] < addresses_[j]) {
-        // original address is less increment originals
-        ERC20 token = ERC20(_tokenAddresses[i]);
-        uint256 balance = token.balanceOf(address(this));
-        reductionAddresses[i] = _tokenAddresses[i];
-        reductions[i] = balance;
-        i++;
-      } else {
-        // incoming address is less, increment incoming
-        price = getPrice(addresses_[j]);
-        newAmount = ((portfolioValue * weights_[j]) / _denom)/ price;
-        accumAddresses[j] = addresses_[j];
-        accumulations[j] = newAmount;
-        j++;
       }
     }
-    // emit Address(reductionAddresses[0]);
-    // emit Address(reductionAddresses[1]);
-    // emit Address(accumAddresses[0]);
-    // emit Address(accumAddresses[1]);
-    // emit Variable(reductions[0]);
-    // emit Variable(reductions[1]);
-    // emit Variable(accumulations[0]);
-    // emit Variable(accumulations[1]);
-    // sell all reductions
-    // uint256 deadline = now + 10 minutes;
-    // for (i = 0; i < reductionAddresses.length;i++) {
-    //   if (reductionAddresses[i] == address(0)) {
-    //     break;
-    //   }
-    //   exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
-    // }
-    // for (i = 0; i < accumAddresses.length;i++) {
-    //   if (accumAddresses[i] == address(0)) {
-    //     break;
-    //   }
-    //   tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
-    // }
-    // setStrategy(addresses_, weights_);
+    migrate(accumAddresses,reductionAddresses,reductions,accumulations);
+    setStrategy(addresses_, weights_);
   }
-  function pathCheck(address tokenFrom,uint amount,address tokenTo) external {
-    // check direct and then check via weth
-    uint firstAmount = getAmountOutForTokens(tokenFrom,tokenTo,amount);
-    address[] memory path = new address[](3);
-    path[0] = tokenFrom;
-    path[1] = uniswapRouter.WETH();
-    path[2] = tokenTo;
-    // uint256[] memory secondAmount = uniswapRouter.getAmountsOut(amount,path);
-    emit Variable(firstAmount);
-    // emit Variable(secondAmount[secondAmount.length]);
+  
+  function migrate(address[] memory accumAddresses,address[] memory reductionAddresses,uint[] memory reductions,uint[] memory accumulations) internal {
+    uint256 deadline = now + 10 minutes;
+    uint i;
+    for (i = 0; i < reductionAddresses.length;i++) {
+      if (reductionAddresses[i] == address(0)) {
+        break;
+      }
+      exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
+    }
+    for (i = 0; i < accumAddresses.length;i++) {
+      if (accumAddresses[i] == address(0)) {
+        break;
+      }
+        // EthToToken();
+      tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
+    }
   }
 
   function depositEth(uint256 ethAmount) internal {
@@ -378,9 +374,5 @@ contract BFIToken is ERC20, AccessControl {
       token.transfer(msg.sender,tokenShare);
     }
     _burn(msg.sender, senderBalance);
-  }
-  modifier whitelisted() {
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
-    _;
   }
 }

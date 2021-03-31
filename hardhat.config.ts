@@ -26,10 +26,10 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      timeout: 20000
+      timeout: 40000
     },
     localhost: {
-      timeout: 20000
+      timeout: 40000
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_ACCESS_TOKEN}`
