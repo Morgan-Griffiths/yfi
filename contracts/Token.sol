@@ -217,40 +217,6 @@ contract BFIToken is ERC20, AccessControl {
     return trade[1];
   }
 
-  function exactTokensForTokensDirect(
-    uint256 amountIn,
-    address tokenIn,
-    address tokenOut,
-    uint256 deadline
-  ) private returns (uint256 amount) {
-    ERC20 token = ERC20(tokenIn);
-    uint256 balance = token.balanceOf(address(this));
-    require(amountIn <= balance,'Attempting to withdraw more than current balance');
-    address[] memory path = new address[](3);
-    path[0] = tokenIn;
-    path[1] = uniswapRouter.WETH();
-    path[2] = tokenOut;
-    token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
-    uint256 amountOutMin = getAmountOutForTokens(tokenIn,tokenOut,amountIn);
-    uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
-  }
-
-  function tokensForExactTokensDirect(
-    uint256 amountOut,
-    address tokenIn,
-    address tokenOut,
-    uint256 deadline
-  ) private returns (uint256 amount) {
-    ERC20 token = ERC20(tokenIn);
-    address[] memory path = new address[](3);
-    path[0] = tokenIn;
-    path[1] = uniswapRouter.WETH();
-    path[2] = tokenOut;
-    uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
-    token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
-    uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
-  }
-
   function setAddresses(address[] memory addresses_) public {
     _tokenAddresses = addresses_;
   }
@@ -335,21 +301,20 @@ contract BFIToken is ERC20, AccessControl {
   }
   
   function migrate(address[] memory accumAddresses,address[] memory reductionAddresses,uint[] memory reductions,uint[] memory accumulations) internal {
-    uint256 deadline = now + 10 minutes;
-    uint i;
-    for (i = 0; i < reductionAddresses.length;i++) {
-      if (reductionAddresses[i] == address(0)) {
-        break;
-      }
-      exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
-    }
-    for (i = 0; i < accumAddresses.length;i++) {
-      if (accumAddresses[i] == address(0)) {
-        break;
-      }
-        // EthToToken();
-      tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
-    }
+    // uint256 deadline = now + 10 minutes;
+    // uint i;
+    // for (i = 0; i < reductionAddresses.length;i++) {
+    //   if (reductionAddresses[i] == address(0)) {
+    //     break;
+    //   }
+    //   exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
+    // }
+    // for (i = 0; i < accumAddresses.length;i++) {
+    //   if (accumAddresses[i] == address(0)) {
+    //     break;
+    //   }
+    //   tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
+    // }
   }
 
   function depositEth(uint256 ethAmount) internal {
@@ -365,7 +330,7 @@ contract BFIToken is ERC20, AccessControl {
     ERC20 token = ERC20(tokenAddress);
     return (token.balanceOf(address(this)));
   }
-  function withdrawRaw() external {
+  function withdrawRaw() external whitelisted {
     uint256 senderBalance = balanceOf(msg.sender);
     for (uint i=0;i<_tokenAddresses.length;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
