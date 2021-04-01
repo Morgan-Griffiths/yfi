@@ -7,15 +7,12 @@ import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
 import './ILibrary.sol';
+import './ITinyToken.sol';
 
 
 contract BFIToken is ERC20, AccessControl {
-  event Variable(uint256 amount);
-  event Balance(uint256 balance);
-  event TokenAddress(address indexed tokenAddress);
-  event Bool(bool falsy);
-  event Performance(uint EthDeposited, uint PortfolioValue);
-  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');    
+  event Balance(uint balance);
+  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');  
   address[] _tokenAddresses;
   uint[] _weights;
   uint internal constant _denom = 1000000;   
@@ -24,6 +21,9 @@ contract BFIToken is ERC20, AccessControl {
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
+  ITinyToken tinyToken;
+  address migrator;
+
   // TokenLibrary public tokenlib;
 
   constructor(address[] memory addresses_,uint[] memory weights_) public ERC20('Blob', 'BFI') {
@@ -34,11 +34,20 @@ contract BFIToken is ERC20, AccessControl {
     _setupRole(MINTER_ROLE, msg.sender);
   }
 
+  modifier isMigrator() {
+    require(msg.sender == migrator, 'Caller is not the migrator');
+    _;
+  }
   modifier whitelisted() {
     require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a minter');
     _;
   }
   receive() external payable {}
+  function setMigrator(address migrator_) external whitelisted {
+    require(migrator == address(0),'Migrator has already been set');
+    migrator = migrator_;
+    tinyToken = ITinyToken(migrator_);
+  }
 
   function whitelistAddress(address recipient) public {
     require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a boss');
@@ -46,11 +55,11 @@ contract BFIToken is ERC20, AccessControl {
     _setupRole(MINTER_ROLE, recipient);
   }
 
-  function portfolioPerformance() public virtual returns (uint,uint) {
-    uint256 eth = ethDeposited();
-    uint256 portVal = valuePortfolio();
-    emit Performance(eth,portVal);
-  }
+  // function portfolioPerformance() public virtual returns (uint,uint) {
+  //   uint256 eth = ethDeposited();
+  //   uint256 portVal = valuePortfolio();
+  //   return 
+  // }
 
   function depositToken(uint amount,address tokenAddress) external whitelisted {
     require(amount > 0, "Must xfer none zero amount of tokens");
@@ -62,7 +71,7 @@ contract BFIToken is ERC20, AccessControl {
     token.transferFrom(msg.sender, address(this), amount);
     msg.sender.transfer(amount);
     // value incoming token amount -> send tokens in response.
-    uint newTokens = getAmountOut(tokenAddress,amount);
+    uint newTokens = tinyToken.getAmountOut(tokenAddress,amount);
     _mint(msg.sender, newTokens);
   }
 
@@ -102,53 +111,13 @@ contract BFIToken is ERC20, AccessControl {
     withdrawEth(eth_amount);
   }
 
-  function getPrice(address token) internal view returns (uint256) {
-    // returns price in WEI
-    address pair = uniswapFactory.getPair(token, uniswapRouter.WETH());
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    return (ethReserves * 1000000) / tokenReserves;
-  }
-
-  function getAmountInForTokens(address tokenIn,address tokenOut,uint amount) internal view returns(uint256) {
-    address pair = uniswapFactory.getPair(tokenIn, tokenOut);
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    // (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    uint amountIn = uniswapRouter.getAmountIn(amount,left,right);
-    return amountIn;
-  }
-  function getAmountOutForTokens(address tokenIn,address tokenOut,uint amountIn) internal view returns(uint256) {
-    address pair = uniswapFactory.getPair(tokenIn, tokenOut);
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (tokenIn < tokenOut) ? (left, right) : (right, left);
-    // uint amountOut = uniswapRouter.getAmountOut(amountIn,left,right);
-    uint amountOut = uniswapRouter.getAmountOut(amountIn,tokenReserves,ethReserves);
-    return amountOut;
-  }
-  function getAmountOut(address tokenAddress,uint amountIn) internal view returns(uint256) {
-    // Token to eth
-    address pair = uniswapFactory.getPair(tokenAddress, uniswapRouter.WETH());
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (tokenAddress < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    uint amountOut = uniswapRouter.getAmountOut(amountIn,tokenReserves,ethReserves);
-    return amountOut;
-  }
-  function getAmountOutEth(address tokenAddress,uint amountIn) internal view returns(uint256) {
-    // Eth to token
-    address pair = uniswapFactory.getPair(tokenAddress, uniswapRouter.WETH());
-    (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
-    (uint tokenReserves, uint ethReserves) = (tokenAddress < uniswapRouter.WETH()) ? (left, right) : (right, left);
-    uint amountOut = uniswapRouter.getAmountOut(amountIn,ethReserves,tokenReserves);
-    return amountOut;
-  }
-
   function EthToToken() private {
     uint ethRemaining = msg.value;
     for (uint i=0;i<_weights.length-1;i++) {
       uint256 ethTokenFraction = (msg.value * _weights[i]) / _denom;
       uint256 deadline = now + 10 minutes;
-      uint256 amountOutMin = getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
-      address[] memory path = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
+      uint256 amountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
+      address[] memory path = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
       uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
         amountOutMin,
         path,
@@ -159,8 +128,8 @@ contract BFIToken is ERC20, AccessControl {
     }
     uint256 lastIndex = _tokenAddresses.length-1;
     uint256 lastDeadline = now + 10 minutes;
-    uint256 lastAmountOutMin = getAmountOutEth(_tokenAddresses[lastIndex],ethRemaining);
-    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
+    uint256 lastAmountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[lastIndex],ethRemaining);
+    address[] memory lastPath = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
     uniswapRouter.swapExactETHForTokens{value: ethRemaining}(
       lastAmountOutMin,
       lastPath,
@@ -176,9 +145,9 @@ contract BFIToken is ERC20, AccessControl {
   ) private returns (uint256 amount) {
     ERC20 token = ERC20(token_addr);
     uint256 balance = token.balanceOf(address(this));
-    require(amountIn <= balance,'Attempting to withdraw more than current balance');
-    address[] memory path = getPathForSwap(token_addr,uniswapRouter.WETH());
-    uint256 amountOutMin = getAmountOut(token_addr,amountIn);
+    require(amountIn <= balance,'tokenToEth amount in is less than balance');
+    address[] memory path = tinyToken.getPathForSwap(token_addr,uniswapRouter.WETH());
+    uint256 amountOutMin = tinyToken.getAmountOut(token_addr,amountIn);
     require(token.approve(UNISWAP_ROUTER_ADDRESS, amountIn),'token not approved');
     uint256[] memory trade = uniswapRouter.swapExactTokensForETH(amountIn,amountOutMin, path, address(this), deadline);
     return trade[1];
@@ -189,14 +158,14 @@ contract BFIToken is ERC20, AccessControl {
     address tokenIn,
     address tokenOut,
     uint256 deadline
-  ) private returns(uint) {
+  ) external isMigrator returns(uint) {
     ERC20 token = ERC20(tokenIn);
     uint256 balance = token.balanceOf(address(this));
-    require(amountIn <= balance,'Attempting to withdraw more than current balance');
+    require(amountIn <= balance,'exactTokensForTokens amount in is less than balance');
     address[] memory path = new address[](2);
     path[0] = tokenIn;
     path[1] = tokenOut;
-    uint256 amountOutMin = getAmountOutForTokens(tokenIn, tokenOut, amountIn);
+    uint256 amountOutMin = tinyToken.getAmountOutForTokens(tokenIn, tokenOut, amountIn);
     token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
     uint256[] memory trade = uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), deadline);
     return trade[1];
@@ -206,39 +175,32 @@ contract BFIToken is ERC20, AccessControl {
     address tokenIn,
     address tokenOut,
     uint256 deadline
-  ) private returns(uint) {
+  ) external isMigrator returns(uint) {
     ERC20 token = ERC20(tokenIn);
     address[] memory path = new address[](2);
     path[0] = tokenIn;
     path[1] = tokenOut;
-    uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
+    uint256 amountInMax = tinyToken.getAmountInForTokens(tokenIn,tokenOut,amountOut);
     token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
     uint256[] memory trade = uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, address(this), deadline);
     return trade[1];
   }
 
-  function setAddresses(address[] memory addresses_) public {
-    _tokenAddresses = addresses_;
-  }
-  function readAddresses() external view returns(address[] memory) {
-    return _tokenAddresses;
-  }
-  function setWeights(uint[] memory weights_) public {
-    _weights = weights_;
-  }
-  function readWeights() external view returns(uint[] memory) {
-    return _weights;
-  }
+  // function setAddresses(address[] memory addresses_) public {
+  //   _tokenAddresses = addresses_;
+  // }
+  // function readAddresses() external view returns(address[] memory) {
+  //   return _tokenAddresses;
+  // }
+  // function setWeights(uint[] memory weights_) public {
+  //   _weights = weights_;
+  // }
+  // function readWeights() external view returns(uint[] memory) {
+  //   return _weights;
+  // }
   function setStrategy(address[] memory addresses_,uint[] memory weights_) internal {  
     _tokenAddresses = addresses_;
     _weights = weights_;
-  }
-
-  function getPathForSwap(address tokenIn,address tokenOut) private pure returns (address[] memory) {
-    address[] memory path = new address[](2);
-    path[0] = tokenIn;
-    path[1] = tokenOut;
-    return path;
   }
 
   function valuePortfolio() public view returns(uint256) {
@@ -246,7 +208,7 @@ contract BFIToken is ERC20, AccessControl {
     for (uint i=0;i<_weights.length;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
-      uint256 amountOutMin = getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
+      uint256 amountOutMin = tinyToken.getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
       portfolio_balance = portfolio_balance.add(amountOutMin);
     }
     return portfolio_balance;
@@ -254,67 +216,15 @@ contract BFIToken is ERC20, AccessControl {
 
   function simpleMigrate(address[] memory addresses_,uint[] memory weights_) external whitelisted {
     uint portfolioValue = valuePortfolio();
-    // (address[] memory accumAddresses,address[] memory reductionAddresses,uint[] memory reductions,uint[] memory accumulations) = tokenlib.getMigration(_tokenAddresses,addresses_,weights_,portfolioValue);
-    uint256 newAmount;
-    uint i=0;
-    uint j=0;
-    uint256 balance;
-    address[] memory accumAddresses = new address[](addresses_.length);
-    address[] memory reductionAddresses = new address[](_tokenAddresses.length);
-    uint[] memory accumulations = new uint[](addresses_.length);
-    uint[] memory reductions = new uint[](_tokenAddresses.length);
-    while (j < addresses_.length || i < _tokenAddresses.length) {
-      if (i == _tokenAddresses.length || _tokenAddresses[i] < addresses_[j]) {
-        // increment j
-        newAmount = ((portfolioValue * weights_[j]) / _denom) / getPrice(addresses_[j]);
-        accumAddresses[j] = addresses_[j];
-        accumulations[j] = newAmount;
-        j++;
-      } else if (j == addresses_.length || _tokenAddresses[i] > addresses_[j]) {
-        // increment i
-        ERC20 token = ERC20(_tokenAddresses[i]);
-        balance = token.balanceOf(address(this));
-        reductionAddresses[i] = _tokenAddresses[i];
-        reductions[i] = balance;
-        i++;
-      } else {
-        // equal
-        ERC20 token = ERC20(_tokenAddresses[i]);
-        balance = token.balanceOf(address(this));
-        newAmount = ((portfolioValue * weights_[j]) / _denom)/ getPrice(addresses_[j]);
-        // same address. record difference
-        if (newAmount >= balance) {
-          // accum
-          accumAddresses[j] = addresses_[j];
-          accumulations[j] = newAmount - balance;
-        } else {
-          // reduction
-          reductionAddresses[j] = addresses_[j];
-          reductions[j] = balance - newAmount;
-        }
-        i++;
-        j++;
-      }
+    uint balance;
+    // approve for withdrawals
+    for (uint i; i < _tokenAddresses.length;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
+      balance = token.balanceOf(address(this));
+      token.approve(migrator,balance);
     }
-    migrate(accumAddresses,reductionAddresses,reductions,accumulations);
+    tinyToken.getMigration(_tokenAddresses,addresses_,weights_,portfolioValue,address(this));
     setStrategy(addresses_, weights_);
-  }
-  
-  function migrate(address[] memory accumAddresses,address[] memory reductionAddresses,uint[] memory reductions,uint[] memory accumulations) internal {
-    // uint256 deadline = now + 10 minutes;
-    // uint i;
-    // for (i = 0; i < reductionAddresses.length;i++) {
-    //   if (reductionAddresses[i] == address(0)) {
-    //     break;
-    //   }
-    //   exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
-    // }
-    // for (i = 0; i < accumAddresses.length;i++) {
-    //   if (accumAddresses[i] == address(0)) {
-    //     break;
-    //   }
-    //   tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
-    // }
   }
 
   function depositEth(uint256 ethAmount) internal {

@@ -31,7 +31,7 @@ function log_outputs(data) {
         console.log(parseInt(value._hex, 16));
       });
     } catch {
-      console.log(element.topics);
+      // console.log(element);
     }
   });
 }
@@ -54,6 +54,7 @@ async function vote_and_migrate(token, votingContract, owner, addr1) {
   // log_outputs(await voted2.wait());
   let gasPrice = BigNumber.from(10).pow(4);
   let gasLimit = BigNumber.from(10).pow(6);
+  console.log('before execute');
   let executeProposal = await votingContract.executeProposal({
     gasPrice,
     gasLimit
@@ -91,8 +92,8 @@ async function main() {
   const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
   const testAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
   const stratContract = await ethers.getContractFactory('Voting');
-  // const tokenlib = await ethers.getContractFactory('tokenLibrary');
-  const BFIToken = await ethers.getContractFactory('BFIToken');
+  const BFIToken = await ethers.getContractFactory('BFIToken', owner);
+  const tinyToken = await ethers.getContractFactory('TinyToken');
   const dai = new ethers.Contract(DAI_ADDRESS, erc20_abi, owner);
   const wbtc = new ethers.Contract(WBTC_ADDRESS, erc20_abi, owner);
   const link = new ethers.Contract(LINK_ADDRESS, erc20_abi, owner);
@@ -107,8 +108,10 @@ async function main() {
     [DAI_ADDRESS, WBTC_ADDRESS],
     ['500000', '500000']
   );
-  // const library = await tokenlib.deploy(addresses, weights);
+  console.log(BFIToken.bytecode.length); //, Object.getOwnPropertyNames(BFIToken));
   const token = await BFIToken.deploy(addresses, weights);
+  const tiny = await tinyToken.deploy(token.address);
+  token.setMigrator(tiny.address);
   const votingContract = await stratContract.deploy(
     [owner.address, addr1.address],
     token.address
