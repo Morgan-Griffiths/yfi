@@ -13,6 +13,7 @@ contract TinyToken {
   IBFIToken token;
   address tokenAddress;
   uint internal constant _denom = 1000000;   
+  address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   address payable internal constant WETH_ADDRESS = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   IUniswapV2Router02 public uniswapRouter;
   IUniswapV2Factory public uniswapFactory;
@@ -83,14 +84,46 @@ contract TinyToken {
       if (reductionAddresses[i] == address(0)) {
         break;
       }
-      token.exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
+      exactTokensForTokens(reductions[i], reductionAddresses[i], uniswapRouter.WETH(), deadline);
     }
     for (i = 0; i < accumAddresses.length;i++) {
       if (accumAddresses[i] == address(0)) {
         break;
       }
-      token.tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
+      tokensForExactTokens(accumulations[i], uniswapRouter.WETH(),accumAddresses[i], deadline);
     }
+  }
+  function exactTokensForTokens(
+    uint256 amountIn,
+    address tokenIn,
+    address tokenOut,
+    uint256 deadline
+  ) internal returns(uint) {
+    ERC20 token = ERC20(tokenIn);
+    uint256 balance = token.balanceOf(tokenAddress);
+    require(amountIn <= balance,'exactTokensForTokens amount in is less than balance');
+    address[] memory path = new address[](2);
+    path[0] = tokenIn;
+    path[1] = tokenOut;
+    uint256 amountOutMin = getAmountOutForTokens(tokenIn, tokenOut, amountIn);
+    token.approve(UNISWAP_ROUTER_ADDRESS, amountIn);
+    uint256[] memory trade = uniswapRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, tokenAddress, deadline);
+    return trade[1];
+  }
+  function tokensForExactTokens(
+    uint256 amountOut,
+    address tokenIn,
+    address tokenOut,
+    uint256 deadline
+  ) internal returns(uint) {
+    ERC20 token = ERC20(tokenIn);
+    address[] memory path = new address[](2);
+    path[0] = tokenIn;
+    path[1] = tokenOut;
+    uint256 amountInMax = getAmountInForTokens(tokenIn,tokenOut,amountOut);
+    token.approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
+    uint256[] memory trade = uniswapRouter.swapTokensForExactTokens(amountOut,amountInMax, path, tokenAddress, deadline);
+    return trade[1];
   }
 
   function getPathForSwap(address tokenIn,address tokenOut) external pure returns (address[] memory) {
@@ -100,14 +133,25 @@ contract TinyToken {
     return path;
   }
 
-  function getAmountInForTokens(address tokenIn,address tokenOut,uint amount) external view returns(uint256) {
+  function valuePortfolio(address[] memory _tokenAddresses) external view returns (uint) {
+    uint256 portfolio_balance = 0; 
+    for (uint i=0;i<_tokenAddresses.length;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
+      uint256 balance = token.balanceOf(tokenAddress);
+      uint256 amountOutMin = getAmountOutForTokens(_tokenAddresses[i],WETH_ADDRESS,balance);
+      portfolio_balance += amountOutMin;
+    }
+    return portfolio_balance;
+  }
+
+  function getAmountInForTokens(address tokenIn,address tokenOut,uint amount) internal view returns(uint256) {
     address pair = uniswapFactory.getPair(tokenIn, tokenOut);
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
     // (uint tokenReserves, uint ethReserves) = (token < uniswapRouter.WETH()) ? (left, right) : (right, left);
     uint amountIn = uniswapRouter.getAmountIn(amount,left,right);
     return amountIn;
   }
-  function getAmountOutForTokens(address tokenIn,address tokenOut,uint amountIn) external view returns(uint256) {
+  function getAmountOutForTokens(address tokenIn,address tokenOut,uint amountIn) internal view returns(uint256) {
     address pair = uniswapFactory.getPair(tokenIn, tokenOut);
     (uint left, uint right,) = IUniswapV2Pair(pair).getReserves();
     (uint tokenReserves, uint ethReserves) = (tokenIn < tokenOut) ? (left, right) : (right, left);

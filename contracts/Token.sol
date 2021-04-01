@@ -58,7 +58,7 @@ contract BFIToken is ERC20, AccessControl {
   // function portfolioPerformance() public virtual returns (uint,uint) {
   //   uint256 eth = ethDeposited();
   //   uint256 portVal = valuePortfolio();
-  //   return 
+  //   emit Performance(eth,portVal)
   // }
 
   function depositToken(uint amount,address tokenAddress) external whitelisted {
@@ -204,13 +204,7 @@ contract BFIToken is ERC20, AccessControl {
   }
 
   function valuePortfolio() public view returns(uint256) {
-    uint256 portfolio_balance = 0; 
-    for (uint i=0;i<_weights.length;i++) {
-      ERC20 token = ERC20(_tokenAddresses[i]);
-      uint256 balance = token.balanceOf(address(this));
-      uint256 amountOutMin = tinyToken.getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
-      portfolio_balance = portfolio_balance.add(amountOutMin);
-    }
+    uint256 portfolio_balance = tinyToken.valuePortfolio(_tokenAddresses);
     return portfolio_balance;
   }
 

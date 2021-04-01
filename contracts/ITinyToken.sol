@@ -8,4 +8,5 @@ interface ITinyToken {
   function getAmountOutForTokens(address tokenIn,address tokenOut,uint amountIn) external view returns(uint256);
   function getAmountOut(address tokenAddress,uint amountIn) external view returns(uint256);
   function getAmountOutEth(address tokenAddress,uint amountIn) external view returns(uint256);
+  function valuePortfolio(address[] memory _tokenAddresses) external view returns (uint256);
 }
