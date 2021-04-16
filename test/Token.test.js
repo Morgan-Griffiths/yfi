@@ -57,14 +57,14 @@ contract('BFIToken', function () {
       'Owner balance'
     );
   });
-  it('Deposit', async function () {
-    let value = BigNumber.from(10).pow(18);
-    let gasPrice = BigNumber.from(10).pow(1);
-    let gasLimit = BigNumber.from(10).pow(6);
-    console.log(await token.totalSupply());
-    console.log(value, gasPrice, gasLimit);
-    console.log(await token.deposit({ value }));
-  });
+  // it('Deposit', async function () {
+  //   let value = BigNumber.from(10).pow(18);
+  //   let gasPrice = BigNumber.from(10).pow(1);
+  //   let gasLimit = BigNumber.from(10).pow(6);
+  //   console.log(await token.totalSupply());
+  //   console.log(value, gasPrice, gasLimit);
+  //   console.log(await token.deposit({ value }));
+  // });
 });
 
 // Start test block
