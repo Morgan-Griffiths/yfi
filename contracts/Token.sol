@@ -16,7 +16,7 @@ contract BFIToken is ERC20, AccessControl {
   address[] _tokenAddresses;
   uint[] _weights;
   uint internal constant _denom = 1000000;   
-  uint256 private _ethDeposited;
+  uint256 _ethDeposited;
 
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   IUniswapV2Factory public uniswapFactory;
@@ -44,7 +44,6 @@ contract BFIToken is ERC20, AccessControl {
   }
   receive() external payable {}
   function setMigrator(address migrator_) external whitelisted {
-    require(migrator == address(0),'Migrator has already been set');
     migrator = migrator_;
     tinyToken = ITinyToken(migrator_);
   }
@@ -55,15 +54,29 @@ contract BFIToken is ERC20, AccessControl {
     _setupRole(MINTER_ROLE, recipient);
   }
 
+  function isWhitelisted(address userAddress) external view returns (bool) {
+    return hasRole(MINTER_ROLE, userAddress);
+  }
+
   // function portfolioPerformance() public virtual returns (uint,uint) {
   //   uint256 eth = ethDeposited();
   //   uint256 portVal = valuePortfolio();
   //   return 
   // }
 
+  function isContained(address tokenAddress) internal view returns(bool) {
+    for (uint i; i < _tokenAddresses.length; i++) {
+      if (tokenAddress == _tokenAddresses[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function depositToken(uint amount,address tokenAddress) external whitelisted {
     require(amount > 0, "Must xfer none zero amount of tokens");
     ERC20 token = ERC20(tokenAddress);
+    require(isContained(tokenAddress),'Token address not in portfolio');
     uint userBalance = token.balanceOf(msg.sender);
     require(userBalance >= amount,'Insufficient user balance');
     uint256 allowance = token.allowance(msg.sender, address(this));
@@ -77,7 +90,6 @@ contract BFIToken is ERC20, AccessControl {
 
   function deposit() external payable whitelisted {
     require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
-    depositEth(msg.value);
     if (totalSupply() > 0) {
       uint256 initial_portfolio_val = valuePortfolio();
       EthToToken();
@@ -101,14 +113,13 @@ contract BFIToken is ERC20, AccessControl {
     for (uint i=0;i<_weights.length-1;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
-      uint256 tokenAmount = (totalSupply() * balance) / amount;
+      uint256 tokenAmount = (amount * balance) / totalSupply();
       uint256 deadline = now + 10 minutes;
       uint256 amtfromtoken = tokenToEth(tokenAmount, _tokenAddresses[i], deadline);
       eth_amount = eth_amount.add(amtfromtoken);
     }
     msg.sender.transfer(eth_amount);
     _burn(msg.sender, amount);
-    withdrawEth(eth_amount);
   }
 
   function EthToToken() private {
@@ -118,8 +129,8 @@ contract BFIToken is ERC20, AccessControl {
       uint256 deadline = now + 10 minutes;
       uint256 amountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
       address[] memory path = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
-      uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
-        amountOutMin,
+      uniswapRouter.swapExactETHForTokens{value: et
+      
         path,
         address(this),
         deadline
@@ -145,7 +156,7 @@ contract BFIToken is ERC20, AccessControl {
   ) private returns (uint256 amount) {
     ERC20 token = ERC20(token_addr);
     uint256 balance = token.balanceOf(address(this));
-    require(amountIn <= balance,'tokenToEth amount in is less than balance');
+    require(amountIn <= balance,'tokenToEth amount in is greater than balance');
     address[] memory path = tinyToken.getPathForSwap(token_addr,uniswapRouter.WETH());
     uint256 amountOutMin = tinyToken.getAmountOut(token_addr,amountIn);
     require(token.approve(UNISWAP_ROUTER_ADDRESS, amountIn),'token not approved');
@@ -186,18 +197,12 @@ contract BFIToken is ERC20, AccessControl {
     return trade[1];
   }
 
-  // function setAddresses(address[] memory addresses_) public {
-  //   _tokenAddresses = addresses_;
-  // }
-  // function readAddresses() external view returns(address[] memory) {
-  //   return _tokenAddresses;
-  // }
-  // function setWeights(uint[] memory weights_) public {
-  //   _weights = weights_;
-  // }
-  // function readWeights() external view returns(uint[] memory) {
-  //   return _weights;
-  // }
+  function readAddresses() external view returns(address[] memory) {
+    return _tokenAddresses;
+  }
+  function readWeights() external view returns(uint[] memory) {
+    return _weights;
+  }
   function setStrategy(address[] memory addresses_,uint[] memory weights_) internal {  
     _tokenAddresses = addresses_;
     _weights = weights_;
@@ -208,8 +213,10 @@ contract BFIToken is ERC20, AccessControl {
     for (uint i=0;i<_weights.length;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
-      uint256 amountOutMin = tinyToken.getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
-      portfolio_balance = portfolio_balance.add(amountOutMin);
+      if (balance > 0) {
+        uint256 amountOutMin = tinyToken.getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
+        portfolio_balance = portfolio_balance.add(amountOutMin);
+      }
     }
     return portfolio_balance;
   }
@@ -228,18 +235,14 @@ contract BFIToken is ERC20, AccessControl {
   }
 
   function depositEth(uint256 ethAmount) internal {
-    _ethDeposited = _ethDeposited.add(ethAmount);
+    _ethDeposited += ethAmount;
   }
   function withdrawEth(uint256 ethAmount) internal {
-    _ethDeposited = _ethDeposited.sub(ethAmount);
+    _ethDeposited -= ethAmount;
   }
   function ethDeposited() public view virtual returns (uint256) {
         return _ethDeposited;
     }
-  function token_balance(address tokenAddress) external view returns (uint256) {
-    ERC20 token = ERC20(tokenAddress);
-    return (token.balanceOf(address(this)));
-  }
   function withdrawRaw() external whitelisted {
     uint256 senderBalance = balanceOf(msg.sender);
     for (uint i=0;i<_tokenAddresses.length;i++) {

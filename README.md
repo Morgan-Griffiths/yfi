@@ -14,6 +14,14 @@ bash fork_mainnet.sh
 
 npx hardhat run --network localhost scripts/deploy.js
 
+# Deploy contract to testnet net
+
+npx hardhat run --network rinkeby scripts/deploy.js
+
+# Extract token abi
+
+npm run abi
+
 # Interact from console
 
 npx hardhat console --network localhost

@@ -26,6 +26,11 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      forking: {
+        url: `https://mainnet.infura.io/v3/${process.env.INFURA_ACCESS_TOKEN}`
+        // url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+        // blockNumber: 8419805
+      },
       timeout: 40000
     },
     localhost: {

@@ -54,7 +54,6 @@ async function vote_and_migrate(token, votingContract, owner, addr1) {
   // log_outputs(await voted2.wait());
   let gasPrice = BigNumber.from(10).pow(4);
   let gasLimit = BigNumber.from(10).pow(6);
-  console.log('before execute');
   let executeProposal = await votingContract.executeProposal({
     gasPrice,
     gasLimit
@@ -85,25 +84,21 @@ async function main() {
   // Our code will go here
   // Retrieve accounts from the local node
   const [owner, addr1, addr2] = await ethers.getSigners();
+  // return console.log('owner', owner);
   const accounts = await ethers.provider.listAccounts();
   // console.log(accounts);
-
   const walletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
   const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
   const testAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
-  const stratContract = await ethers.getContractFactory('Voting');
-  const BFIToken = await ethers.getContractFactory('BFIToken', owner);
-  const tinyToken = await ethers.getContractFactory('TinyToken');
   const dai = new ethers.Contract(DAI_ADDRESS, erc20_abi, owner);
   const wbtc = new ethers.Contract(WBTC_ADDRESS, erc20_abi, owner);
   const link = new ethers.Contract(LINK_ADDRESS, erc20_abi, owner);
   const api3 = new ethers.Contract(API3_ADDRESS, erc20_abi, owner);
 
-  // const Test = await ethers.getContractFactory('Test');
-  // const token = await GLDToken.attach(tokenAddress);
-  // const test = await Test.attach(testAddress);
-  // const test = await Test.deploy();
-  // ,
+  const stratContract = await ethers.getContractFactory('Voting');
+  const BFIToken = await ethers.getContractFactory('BFIToken', owner);
+  const tinyToken = await ethers.getContractFactory('TinyToken');
+
   let { addresses, weights } = sortAddresses(
     [DAI_ADDRESS, WBTC_ADDRESS],
     ['500000', '500000']

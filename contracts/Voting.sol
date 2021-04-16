@@ -22,10 +22,10 @@ contract Voting {
   }
   IBFIToken token;
   event votedEvent(uint indexed id);
-  event Variable(uint amount);
   address public chairperson;
   mapping(uint => Proposal) public proposalLookup;
   mapping(address => Voter) public voterLookup;
+  address[] public voterAddresses;
   uint public proposalCount = 0;
   uint public totalVotes = 0;
   uint public numVoters;
@@ -35,11 +35,16 @@ contract Voting {
   constructor(address[] memory whitelistedAddresses,address tokenAddress) public {
     token = IBFIToken(tokenAddress);
     chairperson = msg.sender;
+    uint balance;
     // Look up all token holders in sister contract
     // Construct all voters 
     numVoters = whitelistedAddresses.length;
     for (uint i=0;i<whitelistedAddresses.length;i++) {
+      // check voter balance
+      // if (token.balanceOf(whitelistedAddresses[i]) >= 0) {
       voterLookup[whitelistedAddresses[i]] = Voter(1,false,address(0),0,0);
+      voterAddresses.push(whitelistedAddresses[i]);
+      // }
     }
   }
   receive() external payable {}
@@ -68,6 +73,8 @@ contract Voting {
     }
   }
   function delegate(address to) public {
+      // require(token.balanceOf(msg.sender) > 0,'Degator does not own any tokens');
+      // require(token.balanceOf(to) > 0,'Degated does not own any tokens');
       // assigns reference
       Voter storage sender = voterLookup[msg.sender];
       require(!sender.voted, "You already voted.");
@@ -91,16 +98,29 @@ contract Voting {
       }
   }
   function vote(uint id) external {
-    require(voterLookup[msg.sender].voted == false);
+    // require(token.balanceOf(voterLookup[msg.sender]) > 0,'Voter does not hold any tokens');
+    require(voterLookup[msg.sender].voted == false,'Voter has already voted');
     require(id >= 0 && id <= proposalCount);
-    proposalLookup[id].voteCount ++;
+    proposalLookup[id].voteCount += voterLookup[msg.sender].weight;
     voterLookup[msg.sender].voted = true;
     totalVotes += 1;
     emit votedEvent(id);
   }
+  function reset() external {
+    totalVotes = 0;
+    proposalCount = 0;
+    for (uint i=0;i < voterAddresses.length; i++) {
+      voterLookup[voterAddresses[i]].voted = false;
+      voterLookup[voterAddresses[i]].vote = 0;
+      voterLookup[voterAddresses[i]].proposals = 0;
+    }
+  }
   function getProposal(uint index) external view returns (string memory,address[] memory,uint[] memory,uint) {
     Proposal memory proposal = proposalLookup[index];
     return (proposal.name,proposal.tokenAddresses,proposal.weights,proposal.voteCount);
+  }
+  function readAddresses() external view returns (address[] memory) {
+    return voterAddresses;
   }
   function executeProposal() external {
     // trigger migrate porfolio in token

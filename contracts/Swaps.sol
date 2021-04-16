@@ -5,52 +5,49 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
+import './ITinyToken.sol';
 
-contract UNISwaps is ERC20 {
+contract Swaps is ERC20 {
   event Variable(uint256 amount);
   event Address(address tokenAddress);
-  address[] tokenAddresses;
-  uint[] weights;
-  uint internal constant denom =
-    10000000;
+  address[] _tokenAddresses;
+  uint[] _weights;
+  uint _ethDeposited;
+  uint internal constant _denom = 10000000;
+  ITinyToken tinyToken;
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
-  address internal constant DAI_ADDRESS = 0x6B175474E89094C44Da98b954EedeAC495271d0F ;
-  address internal constant WBTC_ADDRESS =
-    0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
   IUniswapV2Factory public uniswapFactory;
   IUniswapV2Router02 public uniswapRouter;
-  constructor(uint[] memory _weights,address[] memory _addresses) public ERC20('UNISwap', 'SWP')  {
-    tokenAddresses = _addresses;
-    weights = _weights;
+  constructor(address[] memory addresses_,uint[] memory weights_,address tinyAddress) public ERC20('Swaps', 'SWP')  {
+    _tokenAddresses = addresses_;
+    _weights = weights_;
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing
     uniswapFactory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f); // For testing
+    tinyToken = ITinyToken(tinyAddress);
   }
 
   receive() external payable {}
   function deposit() external payable {
     require(msg.value > 0.01 ether, 'Insufficient amount of ether sent');
-    EthToTokens();
-    _mint(msg.sender, msg.value);
-    // if (totalSupply() > 0) {
-    //   uint256 initial_portfolio_val = valuePortfolio();
-    //   uint256 portfolio_val = valuePortfolio();
-    //   uint256 new_tokens = ((portfolio_val - initial_portfolio_val) *  totalSupply()) / initial_portfolio_val;
-    //   _mint(msg.sender, new_tokens);
-    // } else {
-    //   EthToTokens();
-    //   // uint256 portfolio_val = valuePortfolio();
-    // }
+    depositEth(msg.value);
+    if (totalSupply() > 0) {
+      uint256 initial_portfolio_val = valuePortfolio();
+      EthToToken();
+      uint256 portfolio_val = valuePortfolio();
+      uint256 new_tokens = ((portfolio_val - initial_portfolio_val) *  totalSupply()) / initial_portfolio_val;
+      _mint(msg.sender, new_tokens);
+    } else {
+      EthToToken();
+      _mint(msg.sender, msg.value);
+    }
   }
-  function EthToTokens() private {
-    require(weights.length >= 2,'Requires at least 2 underlying tokens');
+  function EthToToken() private {
     uint ethRemaining = msg.value;
-    for (uint i=0;i<weights.length-1;i++) {
-      uint256 ethTokenFraction = (msg.value * weights[i]) / denom;
+    for (uint i=0;i<_weights.length-1;i++) {
+      uint256 ethTokenFraction = (msg.value * _weights[i]) / _denom;
       uint256 deadline = now + 10 minutes;
-      uint256 amountOutMin = getAmountOutEth(tokenAddresses[i],ethTokenFraction);
-      address[] memory path = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[i]);
-      // emit Variable(ethTokenFraction);
-      // emit Variable(amountOutMin);
+      uint256 amountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
+      address[] memory path = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
       uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
         amountOutMin,
         path,
@@ -58,23 +55,19 @@ contract UNISwaps is ERC20 {
         deadline
       );
       ethRemaining = ethRemaining.sub(ethTokenFraction);
-      // ERC20 token = ERC20(tokenAddresses[i]);
-      // uint256 balance = token.balanceOf(address(this));
-      // emit Variable(balance);
     }
-    uint256 lastIndex = tokenAddresses.length-1;
+    uint256 lastIndex = _tokenAddresses.length-1;
     uint256 lastDeadline = now + 10 minutes;
-    uint256 lastAmountOutMin = getAmountOutEth(tokenAddresses[lastIndex],ethRemaining);
-    address[] memory lastPath = getPathForSwap(uniswapRouter.WETH(),tokenAddresses[lastIndex]);
+    uint256 lastAmountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[lastIndex],ethRemaining);
+    address[] memory lastPath = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[lastIndex]);
     uniswapRouter.swapExactETHForTokens{value: ethRemaining}(
       lastAmountOutMin,
       lastPath,
-      address(this), 
+      address(this),
       lastDeadline
     );
-    // ERC20 token = ERC20(tokenAddresses[lastIndex]);
-    // uint256 balance = token.balanceOf(address(this));
   }
+
   function tokenToEth(
     uint256 amountIn,
     address token_addr,
@@ -98,17 +91,17 @@ contract UNISwaps is ERC20 {
     // The amount relative to balance is the % of the total they are selling
     // Times the balance by the number of outstanding tokens, then divide by the incoming tokens
     uint256 eth_amount = 0;
-    for (uint i=0;i<weights.length-1;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+    for (uint i=0;i<_tokenAddresses.length-1;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 tokenAmount = (totalSupply() * balance) / amount;
       uint256 deadline = now + 10 minutes;
-      uint256 amtfromtoken = tokenToEth(tokenAmount, tokenAddresses[i], deadline);
+      uint256 amtfromtoken = tokenToEth(tokenAmount, _tokenAddresses[i], deadline);
       eth_amount += amtfromtoken;
     }
-    // emit Variable(eth_amount);
     msg.sender.transfer(eth_amount);
     _burn(msg.sender, amount);
+    withdrawEth(eth_amount);
   }
 
   function getPathForSwap(address tokenIn,address tokenOut) private pure returns (address[] memory) {
@@ -142,11 +135,22 @@ contract UNISwaps is ERC20 {
   }
   function valuePortfolio() public view returns(uint256) {
     uint256 portfolio_balance = 0; 
-    for (uint i=0;i<weights.length;i++) {
-      ERC20 token = ERC20(tokenAddresses[i]);
+    for (uint i=0;i<_tokenAddresses.length;i++) {
+      ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
-      uint256 amountOutMin = getAmountOutForTokens(tokenAddresses[i],uniswapRouter.WETH(),balance);
+      uint256 amountOutMin = getAmountOutForTokens(_tokenAddresses[i],uniswapRouter.WETH(),balance);
       portfolio_balance += amountOutMin;
     }
+    return portfolio_balance;
   }
+
+  function depositEth(uint256 ethAmount) internal {
+    _ethDeposited += ethAmount;
+  }
+  function withdrawEth(uint256 ethAmount) internal {
+    _ethDeposited -= ethAmount;
+  }
+  function ethDeposited() public view virtual returns (uint256) {
+        return _ethDeposited;
+    }
 }

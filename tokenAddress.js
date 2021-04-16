@@ -1,4 +1,8 @@
 const MAINNET = {
+  API3: {
+    tokenAddress: '0x0b38210ea11411557c13457d4da7dc6ea731b88a',
+    decimals: 18
+  },
   DAI: {
     address: '0x09cabec1ead1c0ba254b09efb3ee13841712be14',
     tokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
