@@ -18,11 +18,11 @@ const WETH = TOKENS[Network]['WETH'];
 const WBTC = TOKENS[Network]['WBTC'];
 const API3 = TOKENS[Network]['API3'];
 
-const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-const LINK_ADDRESS = '0x514910771AF9Ca656af840dff83E8264EcF986CA';
-const API3_ADDRESS = '0x0b38210ea11411557c13457D4dA7dC6ea731B88a';
+// const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+// const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
+// const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+// const LINK_ADDRESS = '0x514910771AF9Ca656af840dff83E8264EcF986CA';
+// const API3_ADDRESS = '0x0b38210ea11411557c13457D4dA7dC6ea731B88a';
 const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
 const router_abi = [
@@ -48,7 +48,7 @@ function log_outputs(data) {
 
 async function vote_and_migrate(token, votingContract, owner, addr1) {
   let { addresses, weights } = sortAddresses(
-    [LINK.tokenAddress, API3_ADDRESS],
+    [LINK.tokenAddress, API3.tokenAddress],
     ['300000', '700000']
   );
   // await token.whitelistAddress(votingContract.address);
@@ -104,10 +104,10 @@ async function main() {
   const walletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
   const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
   const testAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
-  const dai = new ethers.Contract(DAI_ADDRESS, erc20_abi, owner);
-  const wbtc = new ethers.Contract(WBTC_ADDRESS, erc20_abi, owner);
-  const link = new ethers.Contract(LINK_ADDRESS, erc20_abi, owner);
-  const api3 = new ethers.Contract(API3_ADDRESS, erc20_abi, owner);
+  const dai = new ethers.Contract(DAI.tokenAddress, erc20_abi, owner);
+  const wbtc = new ethers.Contract(WBTC.tokenAddress, erc20_abi, owner);
+  const link = new ethers.Contract(LINK.tokenAddress, erc20_abi, owner);
+  const api3 = new ethers.Contract(API3.tokenAddress, erc20_abi, owner);
 
   let insufficientVal = BigNumber.from(10).pow(9);
   let value = BigNumber.from(10).pow(18);
@@ -189,6 +189,8 @@ async function main() {
   expect(await token.balanceOf(owner.address)).to.be.equal(0);
   dai_balance = await dai.balanceOf(token.address);
   wbtc_balance = await wbtc.balanceOf(token.address);
+  console.log('dai_balance', dai_balance.toString());
+  console.log('wbtc_balance', wbtc_balance.toString());
   // expect(parseInt(dai_balance._hex, 16)).to.be.closeTo(0, 2);
   // expect(parseInt(wbtc_balance._hex, 16)).to.be.closeTo(0, 2);
   // deposit -> withdraw raw
@@ -204,6 +206,17 @@ async function main() {
   wbtc_balance = await wbtc.balanceOf(token.address);
   expect(parseInt(dai_balance._hex, 16)).to.be.equal(0);
   expect(parseInt(wbtc_balance._hex, 16)).to.be.equal(0);
+  console.log('DEPOSIT ERC20');
+  let tokenAmount = BigNumber.from(10).pow(19);
+  dai_balance = (await dai.balanceOf(owner.address)).toString();
+  console.log('owner dai_balance', dai_balance);
+  await dai.approve(token.address, tokenAmount);
+  await token.depositToken(tokenAmount, DAI.tokenAddress);
+  dai_balance = await dai.balanceOf(owner.address);
+  console.log('owner dai_balance', dai_balance.toString());
+  dai_balance = await dai.balanceOf(token.address);
+  expect(parseInt(dai_balance._hex, 16)).to.be.greaterThan(0);
+  console.log('dai_balance', dai_balance.toString());
   console.log('MULTI DEPOSITS WITHDRAW RAW');
   // multi deposits and withdrawals
   await token.deposit({ value, gasPrice, gasLimit });

@@ -4,14 +4,9 @@ const { sortAddresses } = require('../utils');
 const erc20_abi = require('../erc20abi.json');
 const token_abi = require('../token_abi.json');
 const voting_abi = require('../voting_abi.json');
+const { whitelisted } = require('../globals.json');
 
-// const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-// const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-// const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-
-const Chris = '0xC12fA5891f11C61c7DA5419DD4A431194D37Ac1F';
-const Ryan = '0x7031eCCE999f1d305cc48D07259d1D404A6b777E';
-const Alex = '0x4679847e76bDF9008A8Bf4A958949Ba6B0cD35B8';
+const { Chris, Ryan, Alex, TJ } = whitelisted;
 
 const ROPSTEN_PRIVATE_KEY = 'YOUR ROPSTEN PRIVATE KEY';
 const Network = 'RINKEBY';
@@ -44,7 +39,6 @@ async function main() {
   // const token = await Token.deploy(addresses, weights, tinyTokenRinkeby);
   // await token.deployed();
   // console.log('Swaps deployed to:', token.address);
-
   const Token = await ethers.getContractFactory('BFIToken');
   console.log('Deploying Token...');
   const token = await Token.deploy(addresses, weights);
@@ -56,7 +50,7 @@ async function main() {
   await tiny.deployed();
   const Voting = await ethers.getContractFactory('Voting');
   const voting = await Voting.deploy(
-    [deployer.address, Chris, Ryan, Alex],
+    [deployer.address, Chris, Ryan, Alex, TJ],
     token.address
   );
   await voting.deployed();
@@ -69,6 +63,7 @@ async function main() {
   await token.whitelistAddress(Chris);
   await token.whitelistAddress(Ryan);
   await token.whitelistAddress(Alex);
+  await token.whitelistAddress(TJ);
 }
 
 main()
