@@ -9,9 +9,12 @@ const voting_abi = require('../voting_abi.json');
 // const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
 // const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 
+const Chris = '0xC12fA5891f11C61c7DA5419DD4A431194D37Ac1F';
+const Ryan = '0x7031eCCE999f1d305cc48D07259d1D404A6b777E';
+const Alex = '0x4679847e76bDF9008A8Bf4A958949Ba6B0cD35B8';
+
 const ROPSTEN_PRIVATE_KEY = 'YOUR ROPSTEN PRIVATE KEY';
 const Network = 'RINKEBY';
-const tinyTokenRinkeby = '0x63d1e326664D08Cd3686335516C334147816E481';
 const DAI = TOKENS[Network]['DAI'];
 const LINK = TOKENS[Network]['LINK'];
 // scripts/deploy.js
@@ -52,7 +55,10 @@ async function main() {
   const tiny = await tinyToken.deploy(token.address);
   await tiny.deployed();
   const Voting = await ethers.getContractFactory('Voting');
-  const voting = await Voting.deploy([deployer.address], token.address);
+  const voting = await Voting.deploy(
+    [deployer.address, Chris, Ryan, Alex],
+    token.address
+  );
   await voting.deployed();
   console.log('Voting deployed to:', voting.address);
   console.log('tiny deployed to:', tiny.address);
@@ -60,6 +66,9 @@ async function main() {
   await token.setMigrator(tiny.address);
   // add voting to whitelisted addresses for token
   await token.whitelistAddress(voting.address);
+  await token.whitelistAddress(Chris);
+  await token.whitelistAddress(Ryan);
+  await token.whitelistAddress(Alex);
 }
 
 main()

@@ -30,7 +30,9 @@ contract BFIToken is ERC20, AccessControl {
     setStrategy(addresses_,weights_);
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // For testing
     uniswapFactory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f); // For testing
-    // tokenlib = TokenLibrary(libraryAddress);
+    // for (uint i=0;i<toWhitelist.length;i++) {
+    //   _setupRole(MINTER_ROLE, toWhitelist[i]);
+    // }
     _setupRole(MINTER_ROLE, msg.sender);
   }
 
@@ -129,8 +131,8 @@ contract BFIToken is ERC20, AccessControl {
       uint256 deadline = now + 10 minutes;
       uint256 amountOutMin = tinyToken.getAmountOutEth(_tokenAddresses[i],ethTokenFraction);
       address[] memory path = tinyToken.getPathForSwap(uniswapRouter.WETH(),_tokenAddresses[i]);
-      uniswapRouter.swapExactETHForTokens{value: et
-      
+      uniswapRouter.swapExactETHForTokens{value: ethTokenFraction}(
+        amountOutMin,
         path,
         address(this),
         deadline
