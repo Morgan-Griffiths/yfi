@@ -84,7 +84,6 @@ contract BFIToken is ERC20, AccessControl {
     uint256 allowance = token.allowance(msg.sender, address(this));
     require(allowance >= amount, "Check the token allowance");
     token.transferFrom(msg.sender, address(this), amount);
-    msg.sender.transfer(amount);
     // value incoming token amount -> send tokens in response.
     uint newTokens = tinyToken.getAmountOut(tokenAddress,amount);
     _mint(msg.sender, newTokens);
@@ -112,7 +111,7 @@ contract BFIToken is ERC20, AccessControl {
     // The amount relative to balance is the % of the total they are selling
     // Times the balance by the number of outstanding tokens, then divide by the incoming tokens
     uint256 eth_amount = 0;
-    for (uint i=0;i<_weights.length-1;i++) {
+    for (uint i=0;i<_weights.length;i++) {
       ERC20 token = ERC20(_tokenAddresses[i]);
       uint256 balance = token.balanceOf(address(this));
       uint256 tokenAmount = (amount * balance) / totalSupply();
