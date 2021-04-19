@@ -59,11 +59,7 @@ async function main() {
   // setMigrator for token
   await token.setMigrator(tiny.address);
   // add voting to whitelisted addresses for token
-  await token.whitelistAddress(voting.address);
-  await token.whitelistAddress(Chris);
-  await token.whitelistAddress(Ryan);
-  await token.whitelistAddress(Alex);
-  await token.whitelistAddress(TJ);
+  await token.batchWhitelist([voting.address, Chris, Ryan, Alex, TJ]);
 }
 
 main()

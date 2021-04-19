@@ -10,7 +10,9 @@ const token_abi = require('../token_abi.json');
 const voting_abi = require('../voting_abi.json');
 var fs = require('fs');
 const { sortAddresses } = require('../utils');
+const { whitelisted } = require('../globals.json');
 
+const { Chris, Ryan, Alex, TJ } = whitelisted;
 const Network = 'MAINNET';
 const DAI = TOKENS[Network]['DAI'];
 const LINK = TOKENS[Network]['LINK'];
@@ -130,7 +132,7 @@ async function main() {
     [owner.address, addr1.address],
     token.address
   );
-  token.whitelistAddress(votingContract.address);
+  token.batchWhitelist([votingContract.address]);
 
   // TESTS //
   // whitelist address
@@ -138,7 +140,7 @@ async function main() {
     .true;
   expect(await token.hasRole(await token.MINTER_ROLE(), other.address)).to.be
     .false;
-  await token.whitelistAddress(other.address);
+  await token.batchWhitelist([other.address]);
   expect(await token.hasRole(await token.MINTER_ROLE(), other.address)).to.be
     .true;
   // BLOCK DEPOSITS FROM OUTSIDE
@@ -266,6 +268,12 @@ async function main() {
   console.log('Link Balance', parseInt(link_balance._hex, 16));
   api3_balance = await api3.balanceOf(token.address);
   console.log('Api3 Balance', parseInt(api3_balance._hex, 16));
+  console.log('Batch whitelist');
+  await token.batchWhitelist([Chris, Ryan, Alex, TJ]);
+  expect(await token.hasRole(await token.MINTER_ROLE(), Chris)).to.be.true;
+  expect(await token.hasRole(await token.MINTER_ROLE(), Ryan)).to.be.true;
+  expect(await token.hasRole(await token.MINTER_ROLE(), Alex)).to.be.true;
+  expect(await token.hasRole(await token.MINTER_ROLE(), TJ)).to.be.true;
 }
 
 main()

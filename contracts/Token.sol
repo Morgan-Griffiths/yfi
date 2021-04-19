@@ -16,7 +16,6 @@ contract BFIToken is ERC20, AccessControl {
   address[] _tokenAddresses;
   uint[] _weights;
   uint internal constant _denom = 1000000;   
-  uint256 _ethDeposited;
 
   address payable internal constant UNISWAP_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ;
   IUniswapV2Factory public uniswapFactory;
@@ -49,16 +48,17 @@ contract BFIToken is ERC20, AccessControl {
     migrator = migrator_;
     tinyToken = ITinyToken(migrator_);
   }
-
-  function whitelistAddress(address recipient) public {
-    require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a boss');
-    require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a boss');
-    _setupRole(MINTER_ROLE, recipient);
+  function batchWhitelist(address[] memory recipients) external whitelisted {
+    for (uint i=0; i<recipients.length;i++) {
+      require(!hasRole(MINTER_ROLE, recipients[i]), 'Recipient is already a boss');
+      _setupRole(MINTER_ROLE, recipients[i]);
+    }
   }
-
-  function isWhitelisted(address userAddress) external view returns (bool) {
-    return hasRole(MINTER_ROLE, userAddress);
-  }
+  // function whitelistAddress(address recipient) public {
+  //   require(!hasRole(MINTER_ROLE, recipient), 'Recipient is already a boss');
+  //   require(hasRole(MINTER_ROLE, msg.sender), 'Caller is not a boss');
+  //   _setupRole(MINTER_ROLE, recipient);
+  // }
 
   // function portfolioPerformance() public virtual returns (uint,uint) {
   //   uint256 eth = ethDeposited();
@@ -235,15 +235,6 @@ contract BFIToken is ERC20, AccessControl {
     setStrategy(addresses_, weights_);
   }
 
-  function depositEth(uint256 ethAmount) internal {
-    _ethDeposited += ethAmount;
-  }
-  function withdrawEth(uint256 ethAmount) internal {
-    _ethDeposited -= ethAmount;
-  }
-  function ethDeposited() public view virtual returns (uint256) {
-        return _ethDeposited;
-    }
   function withdrawRaw() external whitelisted {
     uint256 senderBalance = balanceOf(msg.sender);
     for (uint i=0;i<_tokenAddresses.length;i++) {

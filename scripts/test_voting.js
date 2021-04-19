@@ -41,7 +41,7 @@ async function vote_and_migrate(token, votingContract, owner, addr1) {
     [LINK_ADDRESS, API3_ADDRESS],
     ['300000', '700000']
   );
-  await token.whitelistAddress(votingContract.address);
+  await token.batchWhitelist([votingContract.address]);
   await votingContract.addProposal('Hippo', addresses, weights);
   let voted = await votingContract.vote(1);
   // log_outputs(await voted.wait());
